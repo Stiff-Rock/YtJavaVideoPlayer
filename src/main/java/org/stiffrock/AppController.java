@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class AppController {
+    private String ytdlpWindows = "lib/yt-dlp.exe";
+    private String ytdlpLinux = "lib/yt-dlp_linux";
+
     private MediaPlayer mediaPlayer;
 
     @FXML
@@ -27,18 +30,32 @@ public class AppController {
         String videoUrl = getDirectVideoUrl(youtubeUrl);
         if (videoUrl != null) {
             playVideo(videoUrl, mediaView);
-            System.out.println("Reproduciendo: " + videoUrl);
+            System.out.println("Reproduciendo video");
         } else {
             System.out.println("Error al obtener el URL del video.");
         }
     }
 
     private String getDirectVideoUrl(String youtubeUrl) {
-        String command = "lib/yt-dlp.exe -f best -g " + youtubeUrl;
+        String ytdlpPath = "";
+
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("win")) {
+            ytdlpPath = ytdlpWindows;
+        } else if (os.contains("nix") || os.contains("nux") || os.contains("mac")) {
+            ytdlpPath = ytdlpLinux;
+        } else {
+            throw new UnsupportedOperationException("Unsupported operating system: " + os);
+        }
+
+
+        printVideoTitle(ytdlpPath, youtubeUrl);
+
+        ProcessBuilder processBuilder = new ProcessBuilder(ytdlpPath, "-f", "best", "-g", youtubeUrl);
         StringBuilder videoUrl = new StringBuilder();
 
         try {
-            Process process = Runtime.getRuntime().exec(command);
+            Process process = processBuilder.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
 
@@ -47,7 +64,10 @@ public class AppController {
             }
 
             reader.close();
-            process.waitFor();
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new IOException("Error occurred while executing yt-dlp. Exit code: " + exitCode);
+            }
 
             return videoUrl.toString().trim();
         } catch (IOException | InterruptedException e) {
@@ -55,6 +75,17 @@ public class AppController {
         }
 
         return null;
+    }
+
+    private void printVideoTitle(String ytdlpPath, String youtubeUrl) {
+        try {
+            Process process = new ProcessBuilder(ytdlpPath, "--get-title", youtubeUrl).start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            System.out.println("Loading: " + reader.readLine());
+            process.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void playVideo(String videoUrl, MediaView mediaView) {
