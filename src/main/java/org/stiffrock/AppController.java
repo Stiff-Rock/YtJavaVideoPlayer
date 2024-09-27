@@ -12,17 +12,39 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class AppController {
-    private String ytdlpWindows = "lib/yt-dlp.exe";
-    private String ytdlpLinux = "lib/yt-dlp_linux";
+
+    //TODO Controlar volumen
+    //TODO Pantalla de carga
+    //TODO Fade in/out
+    //TODO Añadir playlists o colas
+    //TODO Poner canción en bucle
+    //TODO Boton play/pause se combinan
+    //TODO Botón next con fade in/out
+    //TODO Pausa
+    //TODO Stop
+    //TODO Mostrar titulo video
+    //TODO Gestionar cola
 
     private MediaPlayer mediaPlayer;
-
     @FXML
     private TextField tfUrl;
     @FXML
+    private Button btnLoad;
+    @FXML
     private Button btnPlay;
     @FXML
+    private Button btnPause;
+    @FXML
+    private Button btnStop;
+    @FXML
+    private Button btnNext;
+    @FXML
     private MediaView mediaView;
+
+    @FXML
+    private void load() {
+
+    }
 
     @FXML
     private void play() {
@@ -36,14 +58,29 @@ public class AppController {
         }
     }
 
+    @FXML
+    private void pause() {
+
+    }
+
+    @FXML
+    private void stop() {
+
+    }
+
+    @FXML
+    private void next() {
+
+    }
+
     private String getDirectVideoUrl(String youtubeUrl) {
-        String ytdlpPath = "";
+        String ytdlpPath;
 
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {
-            ytdlpPath = ytdlpWindows;
+            ytdlpPath = "lib/yt-dlp.exe";
         } else if (os.contains("nix") || os.contains("nux") || os.contains("mac")) {
-            ytdlpPath = ytdlpLinux;
+            ytdlpPath = "lib/yt-dlp_linux";
         } else {
             throw new UnsupportedOperationException("Unsupported operating system: " + os);
         }
@@ -96,9 +133,7 @@ public class AppController {
         mediaPlayer = new MediaPlayer(media);
         mediaView.setMediaPlayer(mediaPlayer);
 
-        mediaPlayer.setOnError(() -> {
-            System.out.println("Error: " + mediaPlayer.getError().getMessage());
-        });
+        mediaPlayer.setOnError(() -> System.out.println("Error: " + mediaPlayer.getError().getMessage()));
 
         mediaPlayer.play();
     }

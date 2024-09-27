@@ -1,3 +1,11 @@
 VBox {
-    background-color: white;
+    -fx-background-color: white;
+}
+
+#mediaViewPanel {
+    -fx-border-color: black;
+    -fx-border-width: 2px;
+    -fx-border-style: solid;
+    -fx-border-radius: 5px;
+    -fx-border-insets: 5px;
 }
