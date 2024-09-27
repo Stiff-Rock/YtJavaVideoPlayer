@@ -2,15 +2,16 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.media.*?>
 <?import javafx.scene.text.*?>
 
-
-<VBox alignment="CENTER" prefHeight="600" prefWidth="800" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.stiffrock.PrimaryController" stylesheets="@css/style.css">
-   <children>
-      <Label text="Video Player">
-         <font>
+<VBox alignment="CENTER" prefHeight="600" prefWidth="800" spacing="20.0" stylesheets="@css/style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.stiffrock.AppController">
+    <Label text="Video Player">
+        <font>
             <Font name="System Bold" size="24.0" />
-         </font>
-      </Label>
-   </children>
+        </font>
+    </Label>
+    <TextField fx:id="tfUrl" prefHeight="25.0" prefWidth="513.0"/>
+   <MediaView fitHeight="360" fitWidth="640" fx:id="mediaView"/>
+    <Button fx:id="btnPlay" mnemonicParsing="false" onMouseClicked="#play" text="Play" />
 </VBox>
