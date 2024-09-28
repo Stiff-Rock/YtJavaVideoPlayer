@@ -13,7 +13,18 @@ import java.util.Queue;
 public class VideoLoader {
     public static String ytdlpPath;
     private static final Queue<String> videoUrls = new LinkedList<>();
-    private static final Queue<SimpleEntry<String, String>> streamUrls = new LinkedList<>();
+    private static final Queue<SimpleEntry<String, String>> streamUrlQueue = new LinkedList<>();
+    private static Runnable onQueueUpdate;
+
+    public static void setOnQueueUpdateListener(Runnable listener) {
+        onQueueUpdate = listener;
+    }
+
+    private static void notifyQueueUpdate() {
+        if (onQueueUpdate != null) {
+            onQueueUpdate.run();
+        }
+    }
 
     public static Task<Void> loadVideoUrl(String videoUrl) {
         return new Task<>() {
@@ -56,7 +67,7 @@ public class VideoLoader {
         };
     }
 
-    public static Task<Void> loadStreamUrl() {
+    public static Task<Void> retrieveStreamUrl() {
         return new Task<>() {
             @Override
             protected Void call() {
@@ -87,14 +98,17 @@ public class VideoLoader {
                     }
 
                     String streamUrl = videoUrlBuilder.toString().trim();
-                    streamUrls.add(new SimpleEntry<>(streamUrl, getVideoTitle(url)));
-                    System.out.println("Current queue length: " + streamUrls.size());
+                    streamUrlQueue.add(new SimpleEntry<>(streamUrl, getVideoTitle(url)));
+
+                    notifyQueueUpdate();
+
+                    System.out.println("Current queue length: " + streamUrlQueue.size());
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
 
                 if (!videoUrls.isEmpty()) {
-                    new Thread(loadStreamUrl()).start();
+                    new Thread(retrieveStreamUrl()).start();
                 } else {
                     System.out.println("--------------------");
                     System.out.println("Finished loading video/s");
@@ -123,7 +137,15 @@ public class VideoLoader {
         return null;
     }
 
-    public static SimpleEntry<String, String> getStreamUrl() {
-        return streamUrls.poll();
+    public static SimpleEntry<String, String> pollStreamUrl() {
+        return streamUrlQueue.poll();
+    }
+
+    public static boolean isQueueEmpty() {
+        return streamUrlQueue.isEmpty();
+    }
+
+    public static int getQueueSize() {
+        return streamUrlQueue.size();
     }
 }

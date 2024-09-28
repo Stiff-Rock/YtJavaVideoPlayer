@@ -24,13 +24,12 @@ public class AppController {
     //TODO Stop
     //TODO Mostrar titulo video
     //TODO Gestionar cola
+    //TODO Documentar código
 
     @FXML
     private Label lblVideoTitle;
     @FXML
     private TextField tfUrl;
-    @FXML
-    private Button btnLoad;
     @FXML
     private Button btnPlay;
     @FXML
@@ -45,11 +44,20 @@ public class AppController {
     private MediaPlayer mediaPlayer;
 
     @FXML
+    public void initialize() {
+        VideoLoader.setOnQueueUpdateListener(() -> {
+            if (mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
+                btnNext.setDisable(false);
+            }
+        });
+    }
+
+    @FXML
     private void load() {
         String videoUrl = tfUrl.getText();
 
         if (videoUrl == null) {
-            System.err.println("Null Url.");
+            System.err.println("Invalid Url.");
             return;
         }
 
@@ -65,7 +73,7 @@ public class AppController {
 
     private void loadTask(Task<Void> startUrlLoading) {
         startUrlLoading.setOnSucceeded(event -> {
-            Task<Void> streamLoadingTask = VideoLoader.loadStreamUrl();
+            Task<Void> streamLoadingTask = VideoLoader.retrieveStreamUrl();
             streamLoadingTask.setOnSucceeded(streamEvent -> loadMedia());
 
             new Thread(streamLoadingTask).start();
@@ -76,44 +84,58 @@ public class AppController {
 
     private void loadMedia() {
         if (mediaPlayer == null) {
-            SimpleEntry<String, String> video = VideoLoader.getStreamUrl();
-            lblVideoTitle.setText(video.getValue());
+            btnPlay.setDisable(false);
 
-            Media media = new Media(video.getKey());
-            mediaPlayer = new MediaPlayer(media);
-            mediaView.setMediaPlayer(mediaPlayer);
-            MediaPlayer finalMediaPlayer = mediaPlayer;
-            mediaPlayer.setOnError(() -> System.out.println("Error: " + finalMediaPlayer.getError().getMessage()));
+            displayVideo();
         }
     }
 
     @FXML
     private void play() {
         mediaPlayer.play();
+
+        btnPlay.setDisable(true);
+        btnPause.setDisable(false);
+        btnStop.setDisable(false);
     }
 
     @FXML
     private void pause() {
         mediaPlayer.pause();
+
+        btnPlay.setDisable(false);
+        btnPause.setDisable(true);
     }
 
     @FXML
     private void stop() {
         mediaPlayer.stop();
+        btnPlay.setDisable(false);
+        btnPause.setDisable(true);
+        btnStop.setDisable(true);
     }
 
     @FXML
     private void next() {
-        SimpleEntry<String, String> video = VideoLoader.getStreamUrl();
-        if (mediaPlayer != null && video != null) {
+        if (mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
             mediaPlayer.stop();
 
-            lblVideoTitle.setText(video.getValue());
-            Media media = new Media(video.getKey());
-            mediaPlayer = new MediaPlayer(media);
-            mediaView.setMediaPlayer(mediaPlayer);
-            MediaPlayer finalMediaPlayer = mediaPlayer;
-            mediaPlayer.setOnError(() -> System.out.println("Error: " + finalMediaPlayer.getError().getMessage()));
+            displayVideo();
+
+            if (VideoLoader.isQueueEmpty()) btnNext.setDisable(true);
         }
+    }
+
+    private void displayVideo() {
+        SimpleEntry<String, String> video = VideoLoader.pollStreamUrl();
+
+        lblVideoTitle.setText(video.getValue());
+        Media media = new Media(video.getKey());
+
+        mediaPlayer = new MediaPlayer(media);
+        mediaView.setMediaPlayer(mediaPlayer);
+
+        MediaPlayer finalMediaPlayer = mediaPlayer;
+        mediaPlayer.setOnError(() -> System.out.println("Error: " + finalMediaPlayer.getError().getMessage()));
     }
 }
