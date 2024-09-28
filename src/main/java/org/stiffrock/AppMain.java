@@ -7,19 +7,35 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class AppMain extends Application {
-
-    private static Scene scene;
 
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(AppMain.class.getResource("appView.fxml"));
-        scene = new Scene(fxmlLoader.load());
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("media/icon.png")));
+        Scene scene = new Scene(fxmlLoader.load());
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/icon.png"))));
         stage.setScene(scene);
         stage.setTitle("Yt Video Player");
         stage.show();
+
+        verifyOsCompatibility();
+    }
+
+    private void verifyOsCompatibility() {
+        String os = System.getProperty("os.name").toLowerCase();
+
+        String ytdlpPath;
+        if (os.contains("win")) {
+            ytdlpPath = "lib/yt-dlp.exe";
+        } else if (os.contains("nix") || os.contains("nux") || os.contains("mac")) {
+            ytdlpPath = "lib/yt-dlp_linux";
+        } else {
+            throw new UnsupportedOperationException("Unsupported operating system: " + os);
+        }
+
+        VideoLoader.ytdlpPath = ytdlpPath;
     }
 
     public static void main(String[] args) {

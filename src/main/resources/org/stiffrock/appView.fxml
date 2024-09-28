@@ -6,48 +6,53 @@
 <?import javafx.scene.media.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="600" prefWidth="800" stylesheets="@css/style.css" xmlns="http://javafx.com/javafx/17.0.2-ea"
-            xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.stiffrock.AppController">
-    <Label layoutX="315.0" layoutY="46.0" text="Video Player" underline="true">
-        <font>
-            <Font name="System Bold" size="24.0"/>
-        </font>
-    </Label>
-    <TextField fx:id="tfUrl" layoutX="125.0" layoutY="95.0" maxHeight="25.0" prefHeight="24.0" prefWidth="551.0"
-               promptText="Youtube Url..."/>
-    <Button fx:id="btnLoad" onAction="#load" layoutX="684.0" layoutY="95.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="34.0" text="Load"/>
-    <StackPane id="mediaViewPanel" layoutX="78.0" layoutY="146.0" prefHeight="360" prefWidth="640">
-        <MediaView fx:id="mediaView" fitHeight="360" fitWidth="640"/>
+<AnchorPane id="mainPanel" prefHeight="600" prefWidth="800" stylesheets="@css/style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.stiffrock.AppController">
+    <HBox alignment="CENTER" layoutX="86.0" layoutY="460.0" prefHeight="25.0" prefWidth="640.0" spacing="10">
+        <TextField fx:id="tfUrl" layoutX="125.0" layoutY="95.0" maxHeight="25.0" prefHeight="25.0" prefWidth="590.0" promptText="Youtube Url..." text="https://www.youtube.com/watch?v=hCkXqbqmv6Q&amp;list=PL3NkqQUxnB3DIjKVkQInPUY5GOzcIWi1_" />
+        <Button fx:id="btnLoad" layoutX="684.0" layoutY="95.0" mnemonicParsing="false" onAction="#load" prefHeight="24.0" prefWidth="34.0">
+            <graphic>
+                <ImageView>
+                    <Image url="@media/download.png" />
+                </ImageView>
+            </graphic>
+        </Button>
+    </HBox>
+    <StackPane id="mediaViewPanel" layoutX="79.0" layoutY="30.0" prefHeight="360" prefWidth="640">
+        <MediaView fx:id="mediaView" fitHeight="360" fitWidth="640" />
     </StackPane>
-    <HBox id="buttonsPanel" alignment="CENTER" layoutX="296.0" layoutY="530.0" prefHeight="24.0" prefWidth="208.0"
-          spacing="10">
+    <HBox id="buttonsPanel" alignment="CENTER" layoutX="302.0" layoutY="502.0" prefHeight="24.0" prefWidth="208.0" spacing="10">
         <Button fx:id="btnPlay" mnemonicParsing="false" onAction="#play">
             <graphic>
                 <ImageView>
-                    <Image url="@media/play.png"/>
+                    <Image url="@media/play.png" />
                 </ImageView>
             </graphic>
         </Button>
         <Button fx:id="btnPause" mnemonicParsing="false" onAction="#pause">
             <graphic>
                 <ImageView>
-                    <Image url="@media/pause.png"/>
+                    <Image url="@media/pause.png" />
                 </ImageView>
             </graphic>
         </Button>
         <Button fx:id="btnStop" mnemonicParsing="false" onAction="#stop">
             <graphic>
                 <ImageView>
-                    <Image url="@media/stop.png"/>
+                    <Image url="@media/stop.png" />
                 </ImageView>
             </graphic>
         </Button>
         <Button fx:id="btnNext" mnemonicParsing="false" onAction="#next">
             <graphic>
                 <ImageView>
-                    <Image url="@media/next.png"/>
+                    <Image url="@media/next.png" />
                 </ImageView>
             </graphic>
         </Button>
     </HBox>
+    <Label fx:id="lblVideoTitle" layoutX="86.0" layoutY="415.0" prefHeight="31.0" prefWidth="640.0" underline="true">
+        <font>
+            <Font size="21.0" />
+        </font>
+    </Label>
 </AnchorPane>
