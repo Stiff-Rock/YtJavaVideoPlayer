@@ -5,25 +5,24 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Objects;
 
 public class AppController {
 
     //TODO Controlar volumen
     //TODO Pantalla de carga
     //TODO Fade in/out
-    //TODO Añadir playlists o colas
-    //TODO Poner canción en bucle
-    //TODO Boton play/pause se combinan
+    //TODO Botón para poner canción en bucle
     //TODO Botón next con fade in/out
-    //TODO Pausa
-    //TODO Stop
-    //TODO Mostrar titulo video
-    //TODO Gestionar cola
+    //TODO Gestionar y visualizar cola
+    //TODO Barra de progreso y borrar botón de stop
     //TODO Documentar código
 
     @FXML
@@ -31,9 +30,7 @@ public class AppController {
     @FXML
     private TextField tfUrl;
     @FXML
-    private Button btnPlay;
-    @FXML
-    private Button btnPause;
+    private Button btnPlayPause;
     @FXML
     private Button btnStop;
     @FXML
@@ -84,9 +81,17 @@ public class AppController {
 
     private void loadMedia() {
         if (mediaPlayer == null) {
-            btnPlay.setDisable(false);
-
+            btnPlayPause.setDisable(false);
             displayVideo();
+        }
+    }
+
+    @FXML
+    private void changeVideoState() {
+        if (isNotPlaying()) {
+            play();
+        } else if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+            pause();
         }
     }
 
@@ -94,8 +99,7 @@ public class AppController {
     private void play() {
         mediaPlayer.play();
 
-        btnPlay.setDisable(true);
-        btnPause.setDisable(false);
+        toggleBtnPlayPause(false);
         btnStop.setDisable(false);
     }
 
@@ -103,15 +107,14 @@ public class AppController {
     private void pause() {
         mediaPlayer.pause();
 
-        btnPlay.setDisable(false);
-        btnPause.setDisable(true);
+        toggleBtnPlayPause(true);
     }
 
     @FXML
     private void stop() {
         mediaPlayer.stop();
-        btnPlay.setDisable(false);
-        btnPause.setDisable(true);
+
+        toggleBtnPlayPause(true);
         btnStop.setDisable(true);
     }
 
@@ -137,5 +140,17 @@ public class AppController {
 
         MediaPlayer finalMediaPlayer = mediaPlayer;
         mediaPlayer.setOnError(() -> System.out.println("Error: " + finalMediaPlayer.getError().getMessage()));
+    }
+
+    private void toggleBtnPlayPause(boolean state) {
+        if (state) {
+            btnPlayPause.setGraphic(new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/play.png")))));
+        } else {
+            btnPlayPause.setGraphic(new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/pause.png")))));
+        }
+    }
+
+    private boolean isNotPlaying() {
+        return mediaPlayer.getStatus() == MediaPlayer.Status.PAUSED || mediaPlayer.getStatus() == MediaPlayer.Status.READY || mediaPlayer.getStatus() == MediaPlayer.Status.STOPPED;
     }
 }

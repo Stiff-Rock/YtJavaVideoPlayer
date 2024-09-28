@@ -21,17 +21,10 @@
         <MediaView fx:id="mediaView" fitHeight="360" fitWidth="640" />
     </StackPane>
     <HBox id="buttonsPanel" alignment="CENTER" layoutX="302.0" layoutY="502.0" prefHeight="24.0" prefWidth="208.0" spacing="10">
-        <Button fx:id="btnPlay" disable="true" mnemonicParsing="false" onAction="#play">
+        <Button fx:id="btnPlayPause" disable="true" mnemonicParsing="false" onAction="#changeVideoState">
             <graphic>
-                <ImageView>
+                <ImageView disable="true">
                     <Image url="@media/play.png" />
-                </ImageView>
-            </graphic>
-        </Button>
-        <Button fx:id="btnPause" disable="true" mnemonicParsing="false" onAction="#pause">
-            <graphic>
-                <ImageView>
-                    <Image url="@media/pause.png" />
                 </ImageView>
             </graphic>
         </Button>
