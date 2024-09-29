@@ -7,7 +7,7 @@
 <?import javafx.scene.text.*?>
 
 <AnchorPane id="mainPanel" prefHeight="600" prefWidth="800" stylesheets="@css/style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.stiffrock.AppController">
-    <HBox alignment="CENTER" layoutX="86.0" layoutY="460.0" prefHeight="25.0" prefWidth="640.0" spacing="10">
+    <HBox alignment="CENTER" layoutX="86.0" layoutY="471.0" prefHeight="25.0" prefWidth="640.0" spacing="10">
         <TextField fx:id="tfUrl" layoutX="125.0" layoutY="95.0" maxHeight="25.0" prefHeight="25.0" prefWidth="590.0" promptText="Youtube Url..." text="https://www.youtube.com/watch?v=hCkXqbqmv6Q&amp;list=PL3NkqQUxnB3DIjKVkQInPUY5GOzcIWi1_" />
         <Button fx:id="btnLoad" layoutX="684.0" layoutY="95.0" mnemonicParsing="false" onAction="#load" prefHeight="24.0" prefWidth="34.0">
             <graphic>
@@ -17,10 +17,11 @@
             </graphic>
         </Button>
     </HBox>
-    <StackPane id="mediaViewPanel" layoutX="79.0" layoutY="30.0" prefHeight="360" prefWidth="640">
+    <StackPane id="mediaViewPanel" layoutX="79.0" layoutY="30.0" prefHeight="200.0" prefWidth="321.0">
+      <ProgressIndicator fx:id="progressInd" visible="false" />
         <MediaView fx:id="mediaView" fitHeight="360" fitWidth="640" />
     </StackPane>
-    <HBox id="buttonsPanel" alignment="CENTER" layoutX="302.0" layoutY="502.0" prefHeight="24.0" prefWidth="208.0" spacing="10">
+    <HBox id="buttonsPanel" alignment="CENTER" layoutX="302.0" layoutY="508.0" prefHeight="24.0" prefWidth="208.0" spacing="10">
         <Button fx:id="btnPlayPause" disable="true" mnemonicParsing="false" onAction="#changeVideoState">
             <graphic>
                 <ImageView disable="true">
@@ -43,9 +44,10 @@
             </graphic>
         </Button>
     </HBox>
-    <Label fx:id="lblVideoTitle" layoutX="86.0" layoutY="415.0" prefHeight="31.0" prefWidth="640.0" underline="true">
+    <Label fx:id="lblVideoTitle" layoutX="86.0" layoutY="433.0" prefHeight="31.0" prefWidth="640.0" underline="true">
         <font>
             <Font size="21.0" />
         </font>
     </Label>
+   <Slider fx:id="progressBar" disable="true" layoutX="90.0" layoutY="406.0" prefHeight="18.0" prefWidth="632.0" />
 </AnchorPane>

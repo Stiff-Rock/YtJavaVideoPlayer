@@ -2,14 +2,13 @@ package org.stiffrock;
 
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
+import javafx.util.Duration;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Objects;
@@ -24,6 +23,10 @@ public class AppController {
     //TODO Gestionar y visualizar cola
     //TODO Barra de progreso y borrar botón de stop
     //TODO Documentar código
+    //TODO Autoplay??
+
+    private ImageView play;
+    private ImageView pause;
 
     @FXML
     private Label lblVideoTitle;
@@ -37,16 +40,28 @@ public class AppController {
     private Button btnNext;
     @FXML
     private MediaView mediaView;
+    @FXML
+    private ProgressIndicator progressInd;
+    @FXML
+    private Slider progressBar;
 
     private MediaPlayer mediaPlayer;
 
+    private boolean isProgressBarDragged;
+
     @FXML
     public void initialize() {
+        play = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/play.png"))));
+        pause = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/pause.png"))));
+
         VideoLoader.setOnQueueUpdateListener(() -> {
             if (mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
                 btnNext.setDisable(false);
             }
         });
+
+        progressBar.setMin(0);
+        progressBar.setMax(100);
     }
 
     @FXML
@@ -76,12 +91,14 @@ public class AppController {
             new Thread(streamLoadingTask).start();
         });
 
+        if (mediaPlayer == null)
+            progressInd.setVisible(true);
+
         new Thread(startUrlLoading).start();
     }
 
     private void loadMedia() {
         if (mediaPlayer == null) {
-            btnPlayPause.setDisable(false);
             displayVideo();
         }
     }
@@ -99,7 +116,7 @@ public class AppController {
     private void play() {
         mediaPlayer.play();
 
-        toggleBtnPlayPause(false);
+        toggleBtnPlayPause(pause);
         btnStop.setDisable(false);
     }
 
@@ -107,14 +124,14 @@ public class AppController {
     private void pause() {
         mediaPlayer.pause();
 
-        toggleBtnPlayPause(true);
+        toggleBtnPlayPause(play);
     }
 
     @FXML
     private void stop() {
         mediaPlayer.stop();
 
-        toggleBtnPlayPause(true);
+        toggleBtnPlayPause(play);
         btnStop.setDisable(true);
     }
 
@@ -122,9 +139,9 @@ public class AppController {
     private void next() {
         if (mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
             mediaPlayer.stop();
-
+            progressBar.setValue(0);
             displayVideo();
-
+            toggleBtnPlayPause(play);
             if (VideoLoader.isQueueEmpty()) btnNext.setDisable(true);
         }
     }
@@ -136,18 +153,54 @@ public class AppController {
         Media media = new Media(video.getKey());
 
         mediaPlayer = new MediaPlayer(media);
+        initializeProgressBarListeners();
+        progressBar.setDisable(false);
+
         mediaView.setMediaPlayer(mediaPlayer);
+        btnPlayPause.setDisable(false);
+        progressInd.setVisible(false);
 
         MediaPlayer finalMediaPlayer = mediaPlayer;
         mediaPlayer.setOnError(() -> System.out.println("Error: " + finalMediaPlayer.getError().getMessage()));
     }
 
-    private void toggleBtnPlayPause(boolean state) {
-        if (state) {
-            btnPlayPause.setGraphic(new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/play.png")))));
-        } else {
-            btnPlayPause.setGraphic(new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/pause.png")))));
-        }
+    private void initializeProgressBarListeners() {
+        // Slider change by dragging
+        progressBar.valueChangingProperty().addListener((obs, wasChanging, isChanging) -> isProgressBarDragged = isChanging);
+
+        // Slider pressing
+        progressBar.setOnMousePressed(event -> {
+            isProgressBarDragged = true;
+            double value = (event.getX() / progressBar.getWidth()) * 100;
+            if (value < 0) value = 0;
+            if (value > 100) value = 100;
+            progressBar.setValue(value);
+        });
+
+        // Slider released
+        progressBar.setOnMouseReleased(event -> {
+            double sliderValue = progressBar.getValue();
+            double totalDuration = mediaPlayer.getTotalDuration().toSeconds();
+            if (totalDuration > 0) {
+                mediaPlayer.seek(Duration.seconds(sliderValue / 100 * totalDuration));
+            }
+            isProgressBarDragged = false;
+        });
+
+        // Slider progress updating (not updating slider value in this case)
+        mediaPlayer.currentTimeProperty().addListener((obs, oldTime, newTime) -> {
+            if (!isProgressBarDragged) {
+                double currentTime = mediaPlayer.getCurrentTime().toSeconds();
+                double totalDuration = mediaPlayer.getTotalDuration().toSeconds();
+                if (totalDuration > 0) {
+                    progressBar.setValue((currentTime / totalDuration) * 100);
+                }
+            }
+        });
+    }
+
+    private void toggleBtnPlayPause(ImageView image) {
+        btnPlayPause.setGraphic(image);
     }
 
     private boolean isNotPlaying() {
