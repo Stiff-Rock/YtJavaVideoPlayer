@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -46,6 +47,8 @@ public class AppController {
     private Button btnLoop;
     @FXML
     private Button btnAutoplay;
+    @FXML
+    private StackPane mediaViewPanel;
     @FXML
     private MediaView mediaView;
     @FXML
@@ -259,6 +262,15 @@ public class AppController {
     private void toggleQueueVisibility() {
         queuePanel.setVisible(!queuePanel.isVisible());
         queuePanel.setManaged(!queuePanel.isManaged());
+
+        int width = queuePanel.isVisible() ? 480 : 640;
+        int height = queuePanel.isVisible() ? 270 : 360;
+
+        mediaViewPanel.setMaxWidth(width);
+        mediaViewPanel.setMaxHeight(height);
+
+        mediaView.setFitWidth(width);
+        mediaView.setFitHeight(height);
     }
 
     private void toggleBtnPlayPause(ImageView image) {

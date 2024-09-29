@@ -3,8 +3,8 @@
 }
 
 #mediaViewPanel {
-    -fx-border-width: 2px;
-    -fx-border-color: rgb(172, 172, 172);
+    -fx-border-width: 5px;
+    -fx-border-color: rgb(206, 206, 206);
     -fx-border-style: solid;
     -fx-border-radius: 5px;
 }
