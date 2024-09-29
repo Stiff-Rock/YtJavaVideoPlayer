@@ -15,8 +15,9 @@ public class AppMain extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(AppMain.class.getResource("appView.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
-        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/icon.png"))));
         stage.setScene(scene);
+        stage.setResizable(false);
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/icon.png"))));
         stage.setTitle("Yt Video Player");
         stage.show();
 

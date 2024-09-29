@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
@@ -54,6 +55,8 @@ public class AppController {
     @FXML
     private Slider volumeSlider;
     private static double masterVolume = 1.0;
+    @FXML
+    private VBox queuePanel;
 
     private MediaPlayer mediaPlayer;
 
@@ -250,6 +253,12 @@ public class AppController {
                 }
             }
         });
+    }
+
+    @FXML
+    private void toggleQueueVisibility() {
+        queuePanel.setVisible(!queuePanel.isVisible());
+        queuePanel.setManaged(!queuePanel.isManaged());
     }
 
     private void toggleBtnPlayPause(ImageView image) {

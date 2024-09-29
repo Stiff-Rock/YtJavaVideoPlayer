@@ -3,27 +3,25 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.media.*?>
-<?import javafx.scene.text.*?>
-
+<?import javafx.scene.media.MediaView?>
+<?import javafx.scene.text.Font?>
 <HBox id="mainPanel" prefHeight="600" prefWidth="800" stylesheets="@css/style.css"
       xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="org.stiffrock.AppController">
     <VBox id="viewPanel" alignment="CENTER" layoutX="14.0" layoutY="31.0" prefHeight="600.0" prefWidth="493.0"
           spacing="10" HBox.hgrow="ALWAYS">
-        <StackPane id="mediaViewPanel" layoutX="79.0" layoutY="30.0" prefWidth="452.0">
-            <ProgressIndicator fx:id="progressInd" visible="false"/>
+        <StackPane id="mediaViewPanel" layoutX="79.0" layoutY="30.0" maxWidth="480">
             <MediaView fx:id="mediaView" fitHeight="270" fitWidth="480"/>
+            <ProgressIndicator fx:id="progressInd" visible="false"/>
         </StackPane>
-        <Label fx:id="lblVideoTitle" layoutX="86.0" layoutY="433.0" prefHeight="31.0" prefWidth="471.0"
-               underline="true">
+        <Label fx:id="lblVideoTitle" layoutX="86.0" layoutY="433.0" prefHeight="31.0" maxWidth="580" underline="true">
             <font>
                 <Font size="21.0"/>
             </font>
         </Label>
-        <Slider fx:id="progressBar" disable="true" layoutX="90.0" layoutY="406.0" prefHeight="18.0" prefWidth="278.0"/>
-        <HBox alignment="CENTER" layoutX="86.0" layoutY="471.0" prefHeight="34.0" prefWidth="494.0" spacing="10">
-            <TextField fx:id="tfUrl" layoutX="125.0" layoutY="95.0" maxHeight="25.0" prefHeight="25.0" prefWidth="590.0"
+        <Slider fx:id="progressBar" disable="true" layoutX="90.0" layoutY="406.0" prefHeight="18.0" maxWidth="580"/>
+        <HBox alignment="CENTER" layoutX="86.0" layoutY="471.0" prefHeight="34.0" maxWidth="580" spacing="10">
+            <TextField fx:id="tfUrl" layoutX="125.0" layoutY="95.0" maxHeight="25.0" prefHeight="25.0" prefWidth="546"
                        promptText="Youtube Url..."
                        text="https://www.youtube.com/watch?v=hCkXqbqmv6Q&amp;list=PL3NkqQUxnB3DIjKVkQInPUY5GOzcIWi1_">
                 <font>
@@ -73,14 +71,12 @@
                 <Image url="@media/speaker.png"/>
             </ImageView>
             <Slider fx:id="volumeSlider" value="50.0"/>
-            <Button mnemonicParsing="false" text="Queue"/>
+            <Button mnemonicParsing="false" onAction="#toggleQueueVisibility" text="Queue"/>
         </HBox>
     </VBox>
-    <VBox id="queuePanel" prefWidth="367.0">
+    <VBox id="queuePanel" fx:id="queuePanel" prefWidth="367.0">
         <TitledPane animated="false" collapsible="false" prefWidth="315.0" text="Video Queue">
-            <content>
-                <VBox fx:id="queuePanel" prefHeight="815.0" prefWidth="359.0"/>
-            </content>
+            <VBox prefHeight="815.0" prefWidth="359.0"/>
         </TitledPane>
     </VBox>
 </HBox>
