@@ -16,14 +16,15 @@ import java.util.Objects;
 public class AppController {
 
     //TODO Controlar volumen
-    //TODO Pantalla de carga
+    //TODO Pantalla de cola
     //TODO Fade in/out
     //TODO Botón para poner canción en bucle
     //TODO Botón next con fade in/out
     //TODO Gestionar y visualizar cola
-    //TODO Barra de progreso y borrar botón de stop
     //TODO Documentar código
     //TODO Autoplay??
+    //TODO Reintentar cargar video
+    //TODO Animacion slider volumen
 
     private ImageView play;
     private ImageView pause;
@@ -35,19 +36,26 @@ public class AppController {
     @FXML
     private Button btnPlayPause;
     @FXML
-    private Button btnStop;
-    @FXML
     private Button btnNext;
+    @FXML
+    private Button btnLoop;
+    @FXML
+    private Button btnAutoplay;
     @FXML
     private MediaView mediaView;
     @FXML
     private ProgressIndicator progressInd;
     @FXML
     private Slider progressBar;
+    @FXML
+    private Slider volumeSlider;
+    private static double masterVolume = 1.0;
 
     private MediaPlayer mediaPlayer;
 
     private boolean isProgressBarDragged;
+    private boolean isLoopEnabled;
+    private boolean isAutoplayEnabled;
 
     @FXML
     public void initialize() {
@@ -60,8 +68,19 @@ public class AppController {
             }
         });
 
+        volumeSlider.valueProperty().addListener((obs, oldValue, newValue) -> {
+            masterVolume = newValue.doubleValue() / 100;
+            updateMediaPlayerVolumes();
+        });
+
         progressBar.setMin(0);
         progressBar.setMax(100);
+    }
+
+    private void updateMediaPlayerVolumes() {
+        if (mediaPlayer != null) {
+            mediaPlayer.setVolume(masterVolume);
+        }
     }
 
     @FXML
@@ -117,7 +136,6 @@ public class AppController {
         mediaPlayer.play();
 
         toggleBtnPlayPause(pause);
-        btnStop.setDisable(false);
     }
 
     @FXML
@@ -125,14 +143,6 @@ public class AppController {
         mediaPlayer.pause();
 
         toggleBtnPlayPause(play);
-    }
-
-    @FXML
-    private void stop() {
-        mediaPlayer.stop();
-
-        toggleBtnPlayPause(play);
-        btnStop.setDisable(true);
     }
 
     @FXML
@@ -146,6 +156,22 @@ public class AppController {
         }
     }
 
+    @FXML
+    private void setLoopOption() {
+        if (mediaPlayer != null) {
+            isLoopEnabled = !isLoopEnabled;
+            mediaPlayer.setCycleCount(isLoopEnabled ? MediaPlayer.INDEFINITE : 1);
+        }
+    }
+
+    @FXML
+    private void setAutoplayOption() {
+        if (mediaPlayer != null) {
+            isAutoplayEnabled = !isAutoplayEnabled;
+            mediaPlayer.setAutoPlay(isAutoplayEnabled);
+        }
+    }
+
     private void displayVideo() {
         SimpleEntry<String, String> video = VideoLoader.pollStreamUrl();
 
@@ -153,6 +179,10 @@ public class AppController {
         Media media = new Media(video.getKey());
 
         mediaPlayer = new MediaPlayer(media);
+        mediaPlayer.setOnEndOfMedia(() -> {
+            toggleBtnPlayPause(play);
+        });
+        mediaPlayer.setVolume(masterVolume);
         initializeProgressBarListeners();
         progressBar.setDisable(false);
 
