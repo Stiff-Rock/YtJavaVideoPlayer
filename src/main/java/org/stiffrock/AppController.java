@@ -28,6 +28,10 @@ public class AppController {
 
     private ImageView play;
     private ImageView pause;
+    private ImageView loopEnabled;
+    private ImageView loopDisabled;
+    private ImageView autoplayEnabled;
+    private ImageView autoplayDisabled;
 
     @FXML
     private Label lblVideoTitle;
@@ -59,8 +63,23 @@ public class AppController {
 
     @FXML
     public void initialize() {
-        play = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/play.png"))));
-        pause = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/pause.png"))));
+        play = new ImageView(new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("media/play.png"))));
+
+        pause = new ImageView(new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("media/pause.png"))));
+
+        loopDisabled = new ImageView(new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("media/loop0.png"))));
+
+        loopEnabled = new ImageView(new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("media/loop1.png"))));
+
+        autoplayEnabled = new ImageView(new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("media/autoplay1.png"))));
+
+        autoplayDisabled = new ImageView(new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("media/autoplay0.png"))));
 
         VideoLoader.setOnQueueUpdateListener(() -> {
             if (mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
@@ -160,6 +179,7 @@ public class AppController {
     private void setLoopOption() {
         if (mediaPlayer != null) {
             isLoopEnabled = !isLoopEnabled;
+            btnLoop.setGraphic(isLoopEnabled ? loopEnabled : loopDisabled);
             mediaPlayer.setCycleCount(isLoopEnabled ? MediaPlayer.INDEFINITE : 1);
         }
     }
@@ -168,6 +188,7 @@ public class AppController {
     private void setAutoplayOption() {
         if (mediaPlayer != null) {
             isAutoplayEnabled = !isAutoplayEnabled;
+            btnAutoplay.setGraphic(isAutoplayEnabled ? autoplayEnabled : autoplayDisabled);
             mediaPlayer.setAutoPlay(isAutoplayEnabled);
         }
     }
@@ -179,15 +200,17 @@ public class AppController {
         Media media = new Media(video.getKey());
 
         mediaPlayer = new MediaPlayer(media);
-        mediaPlayer.setOnEndOfMedia(() -> {
-            toggleBtnPlayPause(play);
-        });
+        mediaPlayer.setOnEndOfMedia(() -> toggleBtnPlayPause(play));
+        mediaPlayer.setCycleCount(isLoopEnabled ? MediaPlayer.INDEFINITE : 1);
+        mediaPlayer.setAutoPlay(isAutoplayEnabled);
         mediaPlayer.setVolume(masterVolume);
         initializeProgressBarListeners();
-        progressBar.setDisable(false);
 
         mediaView.setMediaPlayer(mediaPlayer);
+        progressBar.setDisable(false);
         btnPlayPause.setDisable(false);
+        btnAutoplay.setDisable(false);
+        btnLoop.setDisable(false);
         progressInd.setVisible(false);
 
         MediaPlayer finalMediaPlayer = mediaPlayer;

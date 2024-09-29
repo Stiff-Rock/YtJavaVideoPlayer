@@ -45,19 +45,33 @@ public class VideoLoader {
                     Process process = processBuilder.start();
 
                     StringBuilder urlsBuilder = new StringBuilder();
+
                     BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    StringBuilder errorOutput = new StringBuilder();
 
                     String line;
                     while ((line = reader.readLine()) != null) {
                         urlsBuilder.append(line).append("\n");
                     }
 
-                    process.waitFor();
+
+                    BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                    while ((line = errorReader.readLine()) != null) {
+                        errorOutput.append(line).append("\n");
+                    }
+
+                    reader.close();
+                    errorReader.close();
+
+                    int exitCode = process.waitFor();
+                    if (exitCode != 0) {
+                        throw new IOException("Exit code: " + exitCode + "\nError: " + errorOutput.toString().trim());
+                    }
 
                     String[] Urls = urlsBuilder.toString().split("\n");
                     Collections.addAll(videoUrls, Urls);
                 } catch (IOException | InterruptedException e) {
-                    e.printStackTrace();
+                    System.err.println("Error getting video Url. " +  e.getMessage());
                 }
 
                 System.out.println(videoUrls.size() + " URLs loaded.");
@@ -77,11 +91,14 @@ public class VideoLoader {
 
                 String url = videoUrls.poll();
                 ProcessBuilder processBuilder = new ProcessBuilder(ytdlpPath, "-f", "best", "-g", url);
+
                 StringBuilder videoUrlBuilder = new StringBuilder();
+                StringBuilder errorOutput = new StringBuilder();
 
                 try {
                     System.out.println("--------------------");
-                    System.out.println("Loading StreamUrl...");
+                    System.out.println("Loading Stream Url...");
+
                     Process process = processBuilder.start();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
@@ -90,21 +107,28 @@ public class VideoLoader {
                         videoUrlBuilder.append(line).append("\n");
                     }
 
-                    reader.close();
-                    int exitCode = process.waitFor();
+                    BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                    while ((line = errorReader.readLine()) != null) {
+                        errorOutput.append(line).append("\n");
+                    }
 
+                    reader.close();
+                    errorReader.close();
+
+                    int exitCode = process.waitFor();
                     if (exitCode != 0) {
-                        throw new IOException("Error occurred while executing yt-dlp. Exit code: " + exitCode);
+                        throw new IOException("Exit code: " + exitCode + "\nError: " + errorOutput.toString().trim());
                     }
 
                     String streamUrl = videoUrlBuilder.toString().trim();
-                    streamUrlQueue.add(new SimpleEntry<>(streamUrl, getVideoTitle(url)));
+                    String title = getVideoTitle(url);
+                    streamUrlQueue.add(new SimpleEntry<>(streamUrl, title));
 
                     notifyQueueUpdate();
 
                     System.out.println("Current queue length: " + streamUrlQueue.size());
                 } catch (IOException | InterruptedException e) {
-                    e.printStackTrace();
+                    System.err.println("Error retrieving stream Url. " +  e.getMessage());
                 }
 
                 if (!videoUrls.isEmpty()) {
@@ -122,16 +146,32 @@ public class VideoLoader {
     public static String getVideoTitle(String videoUrl) {
         try {
             Process process = new ProcessBuilder(ytdlpPath, "--get-title", videoUrl).start();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-            process.waitFor();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder errorOutput = new StringBuilder();
+
+            String line;
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            while ((line = errorReader.readLine()) != null) {
+                errorOutput.append(line).append("\n");
+            }
+
+            errorReader.close();
+
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new IOException("Exit code: " + exitCode + "\nError: " + errorOutput.toString().trim());
+            }
 
             String title = reader.readLine();
+            reader.close();
+
             System.out.println("Playing: " + title);
 
             return title;
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            System.err.println("Error getting video title: " +  e.getMessage());
+
         }
 
         return null;

@@ -49,7 +49,7 @@
             <Button fx:id="btnLoop" disable="true" mnemonicParsing="false" onAction="#setLoopOption">
                 <graphic>
                     <ImageView>
-                        <Image url="@media/loop.png" />
+                        <Image url="@media/loop0.png" />
                     </ImageView>
                 </graphic>
             </Button>
