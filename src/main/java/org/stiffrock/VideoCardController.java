@@ -1,7 +1,6 @@
 package org.stiffrock;
 
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -12,7 +11,7 @@ import java.util.AbstractMap.SimpleEntry;
 
 public class VideoCardController {
     @FXML
-    private AnchorPane root;
+    private AnchorPane rootPanel;
     @FXML
     private Label title;
     @FXML
@@ -21,6 +20,12 @@ public class VideoCardController {
     private ImageView thumbnail;
 
     private String videoUrl;
+
+    private VBox parent;
+
+    public void setParent(VBox parent) {
+        this.parent = parent;
+    }
 
     public void setVideo(SimpleEntry<String, String[]> videoInfo) {
         videoUrl = videoInfo.getKey();
@@ -36,16 +41,8 @@ public class VideoCardController {
 
     @FXML
     private void delete() {
-        System.out.println(root.getWidth());
-
+        System.out.println(rootPanel.getWidth());
+        parent.getChildren().remove(rootPanel);
         VideoLoader.removeVideoFromQueue(videoUrl);
-        if (thumbnail.getParent() != null) {
-            VBox parent = (VBox) thumbnail.getParent();
-
-            if (parent != null) {
-                parent.getChildren().remove(root);
-                System.out.println("Deleted");
-            }
-        }
     }
 }

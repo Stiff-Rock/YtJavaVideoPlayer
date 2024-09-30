@@ -8,7 +8,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
@@ -22,18 +21,19 @@ import java.util.Objects;
 
 public class AppController {
 
-    //TODO Controlar volumen
+    //TODO Documentar código
     //TODO Pantalla de cola
     //TODO Fade in/out
     //TODO Botón para poner canción en bucle
     //TODO Botón next con fade in/out
     //TODO Gestionar y visualizar cola con tarjetas
-    //TODO Documentar código
     //TODO Reintentar cargar video
     //TODO Animacion slider volumen
     //TODO AUTOPLAY NO VA
     //TODO NEW MEDIA zona da error
-    //TODO Poner duración y que se adapte
+    //TODO Cambiar btnToggleQueue a un toggle o cambiar de icono
+    //TODO Cargar videos individuales sustituye el mediaPlayer cada vez
+    //TODO Títulos se cortan
 
     private ImageView play;
     private ImageView pause;
@@ -45,6 +45,10 @@ public class AppController {
     @FXML
     private Label lblVideoTitle;
     @FXML
+    private Label lblVideoCurrentTime;
+    @FXML
+    private Label lblVideoDuration;
+    @FXML
     private TextField tfUrl;
     @FXML
     private Button btnPlayPause;
@@ -54,6 +58,8 @@ public class AppController {
     private Button btnLoop;
     @FXML
     private Button btnAutoplay;
+    @FXML
+    private Button btnToggleQueue;
     @FXML
     private StackPane mediaViewPanel;
     @FXML
@@ -75,11 +81,7 @@ public class AppController {
     private boolean isProgressBarDragged;
     private boolean isLoopEnabled;
     private boolean isAutoplayEnabled;
-
-    @FXML
-    private void delete() {
-        queueDisplayPanel.getChildren().remove(0);
-    }
+    private boolean isQueueVisible;
 
     @FXML
     public void initialize() {
@@ -145,7 +147,7 @@ public class AppController {
     private void loadTask(Task<Void> startUrlLoading) {
         startUrlLoading.setOnSucceeded(event -> {
             Task<Void> streamLoadingTask = VideoLoader.retrieveStreamUrl();
-            streamLoadingTask.setOnSucceeded(streamEvent -> loadMedia());
+            streamLoadingTask.setOnSucceeded(streamEvent -> displayVideo());
 
             new Thread(streamLoadingTask).start();
         });
@@ -156,12 +158,6 @@ public class AppController {
         new Thread(startUrlLoading).start();
     }
 
-    private void loadMedia() {
-        if (mediaPlayer == null) {
-            displayVideo();
-        }
-    }
-
     private void addVideoCardToQueue(SimpleEntry<String, String[]> videoInfo) {
         Platform.runLater(() -> {
             try {
@@ -169,11 +165,13 @@ public class AppController {
                 AnchorPane videoCard = loader.load();
 
                 VideoCardController controller = loader.getController();
+                controller.setParent(queueDisplayPanel);
+
                 controller.setVideo(videoInfo);
 
                 queueDisplayPanel.getChildren().add(videoCard);
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.println("Error loading video card: " + e.getMessage());
             }
         });
     }
@@ -210,6 +208,7 @@ public class AppController {
         if (mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
             mediaPlayer.stop();
             progressBar.setValue(0);
+            pollVideoCardQueue();
             displayVideo();
             toggleBtnPlayPause(play);
             if (VideoLoader.isQueueEmpty()) btnNext.setDisable(true);
@@ -230,7 +229,6 @@ public class AppController {
         if (mediaPlayer != null) {
             isAutoplayEnabled = !isAutoplayEnabled;
             btnAutoplay.setGraphic(isAutoplayEnabled ? autoplayEnabled : autoplayDisabled);
-            mediaPlayer.setAutoPlay(isAutoplayEnabled);
         }
     }
 
@@ -241,6 +239,11 @@ public class AppController {
         Media media = new Media(video.getKey());
 
         mediaPlayer = new MediaPlayer(media);
+        mediaPlayer.setOnReady(() -> {
+            lblVideoCurrentTime.setText("00:00");
+            lblVideoDuration.setText(formatTime(mediaPlayer.getTotalDuration().toSeconds()));
+        });
+
         mediaPlayer.setOnEndOfMedia(() -> toggleBtnPlayPause(play));
         mediaPlayer.setCycleCount(isLoopEnabled ? MediaPlayer.INDEFINITE : 1);
         mediaPlayer.setAutoPlay(isAutoplayEnabled);
@@ -255,7 +258,12 @@ public class AppController {
         progressInd.setVisible(false);
 
         MediaPlayer finalMediaPlayer = mediaPlayer;
-        mediaPlayer.setOnError(() -> System.out.println("Error: " + finalMediaPlayer.getError().getMessage()));
+        mediaPlayer.setOnError(() -> {
+            System.err.println("Error loading current media: " + finalMediaPlayer.getError().getMessage());
+            System.err.println("Troubleshooting info: ");
+            System.err.println(" - Media: " + media);
+            System.err.println(" - Stream Url: " + video.getKey());
+        });
     }
 
     private void initializeProgressBarListeners() {
@@ -288,18 +296,45 @@ public class AppController {
                 double totalDuration = mediaPlayer.getTotalDuration().toSeconds();
                 if (totalDuration > 0) {
                     progressBar.setValue((currentTime / totalDuration) * 100);
+                    updateDurationLabel(currentTime);
                 }
             }
         });
     }
 
+    // Method to update lblVideoDuration text
+    private void updateDurationLabel(double currentTime) {
+        String currentTimeFormatted = formatTime(currentTime);
+        lblVideoCurrentTime.setText(currentTimeFormatted);
+    }
+
+    // Helper method to format time in minutes:seconds
+    private String formatTime(double seconds) {
+        int hours = (int) seconds / 3600;
+        int minutes = ((int) seconds % 3600) / 60;
+        int secs = (int) seconds % 60;
+
+        if (hours > 0) {
+            return String.format("%d:%02d:%02d", hours, minutes, secs);
+        } else {
+            return String.format("%02d:%02d", minutes, secs);
+        }
+    }
+
+
+
     @FXML
     private void toggleQueueVisibility() {
-        queueContainer.setVisible(!queueContainer.isVisible());
-        queueContainer.setManaged(!queueContainer.isManaged());
+        isQueueVisible = !isQueueVisible;
 
-        int width = queueContainer.isVisible() ? 480 : 640;
-        int height = queueContainer.isVisible() ? 270 : 360;
+        queueContainer.setVisible(isQueueVisible);
+        queueContainer.setManaged(isQueueVisible);
+
+        String btnText = isQueueVisible ? "Hide Queue" : "Show Queue";
+        btnToggleQueue.setText(btnText);
+
+        int width = isQueueVisible ? 480 : 640;
+        int height = isQueueVisible ? 270 : 360;
 
         mediaViewPanel.setMaxWidth(width);
         mediaViewPanel.setMaxHeight(height);

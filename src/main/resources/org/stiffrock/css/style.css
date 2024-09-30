@@ -10,17 +10,21 @@
 }
 
 #viewPanel,
-#queuePanel,
-#queueListPanel {
+#queuePanel {
     -fx-padding: 10px;
+}
+
+#queueListPanel {
+    -fx-padding: 0px;
 }
 
 #videoCardPanel {
     -fx-padding: 10px;
-    -fx-border-width: 2px;
-    -fx-border-color: black;
-    -fx-border-style: solid;
-    -fx-border-radius: 10px;
+    -fx-background-color: white;
+}
+
+#videoCardPanel:hover {
+    -fx-background-color: rgb(168, 168, 168);
 }
 
 #thumbnail{

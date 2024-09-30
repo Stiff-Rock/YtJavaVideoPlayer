@@ -91,7 +91,7 @@ public class VideoLoader {
                 }
 
                 String url = videoUrls.poll();
-                ProcessBuilder processBuilder = new ProcessBuilder(ytdlpPath, "-f", "best", "-g", url);
+                ProcessBuilder processBuilder = new ProcessBuilder(ytdlpPath, "-g", url);
 
                 StringBuilder videoUrlBuilder = new StringBuilder();
                 StringBuilder errorOutput = new StringBuilder();
@@ -178,7 +178,6 @@ public class VideoLoader {
 
         return null;
     }
-
 
     public static SimpleEntry<String, String[]> pollStreamUrl() {
         return streamUrlQueue.poll();
