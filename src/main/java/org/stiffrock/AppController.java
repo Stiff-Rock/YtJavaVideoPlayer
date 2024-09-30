@@ -7,7 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
@@ -34,6 +34,7 @@ public class AppController {
     //TODO Cambiar btnToggleQueue a un toggle o cambiar de icono
     //TODO Cargar videos individuales sustituye el mediaPlayer cada vez
     //TODO Títulos se cortan
+    //TODO Reintentar cuando el media falla al callar
 
     private ImageView play;
     private ImageView pause;
@@ -75,6 +76,8 @@ public class AppController {
     private VBox queueContainer;
     @FXML
     private VBox queueDisplayPanel;
+    @FXML
+    private TitledPane queueTitledPanel;
 
     private MediaPlayer mediaPlayer;
 
@@ -85,29 +88,17 @@ public class AppController {
 
     @FXML
     public void initialize() {
-        play = new ImageView(new Image(Objects.requireNonNull(
-                getClass().getResourceAsStream("media/play.png"))));
+        initializeIcons();
 
-        pause = new ImageView(new Image(Objects.requireNonNull(
-                getClass().getResourceAsStream("media/pause.png"))));
-
-        loopDisabled = new ImageView(new Image(Objects.requireNonNull(
-                getClass().getResourceAsStream("media/loop0.png"))));
-
-        loopEnabled = new ImageView(new Image(Objects.requireNonNull(
-                getClass().getResourceAsStream("media/loop1.png"))));
-
-        autoplayEnabled = new ImageView(new Image(Objects.requireNonNull(
-                getClass().getResourceAsStream("media/autoplay1.png"))));
-
-        autoplayDisabled = new ImageView(new Image(Objects.requireNonNull(
-                getClass().getResourceAsStream("media/autoplay0.png"))));
-
-        VideoLoader.setOnQueueUpdateListener(() -> {
-            if (mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
+        VideoLoader.setOnQueueUpdateListener(newAddedToQueue -> {
+            if (newAddedToQueue && mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
                 addVideoCardToQueue(VideoLoader.peekVideoFromQueue(VideoLoader.getQueueSize() - 1));
                 btnNext.setDisable(false);
+            } else if (!newAddedToQueue && VideoLoader.isQueueEmpty()) {
+                btnNext.setDisable(true);
             }
+
+            Platform.runLater(() -> queueTitledPanel.setText("Video Queue - (" + VideoLoader.getQueueSize() + ")"));
         });
 
         volumeSlider.valueProperty().addListener((obs, oldValue, newValue) -> {
@@ -147,7 +138,7 @@ public class AppController {
     private void loadTask(Task<Void> startUrlLoading) {
         startUrlLoading.setOnSucceeded(event -> {
             Task<Void> streamLoadingTask = VideoLoader.retrieveStreamUrl();
-            streamLoadingTask.setOnSucceeded(streamEvent -> displayVideo());
+            streamLoadingTask.setOnSucceeded(streamEvent -> displayVideo(VideoLoader.pollStreamUrl()));
 
             new Thread(streamLoadingTask).start();
         });
@@ -162,9 +153,11 @@ public class AppController {
         Platform.runLater(() -> {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("queueCard.fxml"));
-                AnchorPane videoCard = loader.load();
+                HBox videoCard = loader.load();
 
                 VideoCardController controller = loader.getController();
+
+                controller.setAppController(this);
                 controller.setParent(queueDisplayPanel);
 
                 controller.setVideo(videoInfo);
@@ -174,6 +167,10 @@ public class AppController {
                 System.err.println("Error loading video card: " + e.getMessage());
             }
         });
+    }
+
+    public void playSelectedVideoCard(String videoUrl) {
+        changeVideo(VideoLoader.pollVideoFromQueueByUrl(videoUrl));
     }
 
     private void pollVideoCardQueue() {
@@ -190,6 +187,22 @@ public class AppController {
     }
 
     @FXML
+    private void next() {
+        if (mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
+            changeVideo(VideoLoader.pollStreamUrl());
+            pollVideoCardQueue();
+        }
+    }
+
+    private void changeVideo(SimpleEntry<String, String[]> videoEntry) {
+        mediaPlayer.stop();
+        progressBar.setValue(0);
+        toggleBtnPlayPause(play);
+        displayVideo(videoEntry);
+        if (VideoLoader.isQueueEmpty()) btnNext.setDisable(true);
+    }
+
+    @FXML
     private void play() {
         mediaPlayer.play();
 
@@ -201,18 +214,6 @@ public class AppController {
         mediaPlayer.pause();
 
         toggleBtnPlayPause(play);
-    }
-
-    @FXML
-    private void next() {
-        if (mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
-            mediaPlayer.stop();
-            progressBar.setValue(0);
-            pollVideoCardQueue();
-            displayVideo();
-            toggleBtnPlayPause(play);
-            if (VideoLoader.isQueueEmpty()) btnNext.setDisable(true);
-        }
     }
 
     @FXML
@@ -232,9 +233,7 @@ public class AppController {
         }
     }
 
-    private void displayVideo() {
-        SimpleEntry<String, String[]> video = VideoLoader.pollStreamUrl();
-
+    private void displayVideo(SimpleEntry<String, String[]> video) {
         lblVideoTitle.setText(video.getValue()[0]);
         Media media = new Media(video.getKey());
 
@@ -322,7 +321,6 @@ public class AppController {
     }
 
 
-
     @FXML
     private void toggleQueueVisibility() {
         isQueueVisible = !isQueueVisible;
@@ -349,5 +347,25 @@ public class AppController {
 
     private boolean isNotPlaying() {
         return mediaPlayer.getStatus() == MediaPlayer.Status.PAUSED || mediaPlayer.getStatus() == MediaPlayer.Status.READY || mediaPlayer.getStatus() == MediaPlayer.Status.STOPPED;
+    }
+
+    private void initializeIcons() {
+        play = new ImageView(new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("media/play.png"))));
+
+        pause = new ImageView(new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("media/pause.png"))));
+
+        loopDisabled = new ImageView(new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("media/loop0.png"))));
+
+        loopEnabled = new ImageView(new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("media/loop1.png"))));
+
+        autoplayEnabled = new ImageView(new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("media/autoplay1.png"))));
+
+        autoplayDisabled = new ImageView(new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("media/autoplay0.png"))));
     }
 }

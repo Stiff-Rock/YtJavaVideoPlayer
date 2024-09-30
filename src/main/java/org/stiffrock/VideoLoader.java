@@ -10,23 +10,23 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.function.Consumer;
 
 public class VideoLoader {
     public static String ytdlpPath;
     private static final Queue<String> videoUrls = new LinkedList<>();
     private static final LinkedList<SimpleEntry<String, String[]>> streamUrlQueue = new LinkedList<>();
-    private static Runnable onQueueUpdate;
+    private static Consumer<Boolean> onQueueUpdate;
 
-    public static void setOnQueueUpdateListener(Runnable listener) {
+    public static void setOnQueueUpdateListener(Consumer<Boolean> listener) {
         onQueueUpdate = listener;
     }
 
-    private static void notifyQueueUpdate() {
+    private static void notifyQueueUpdate(boolean newAddedToQueue) {
         if (onQueueUpdate != null) {
-            onQueueUpdate.run();
+            onQueueUpdate.accept(newAddedToQueue);  // Pass the boolean to the listener
         }
     }
-
     public static Task<Void> loadVideoUrl(String videoUrl) {
         return new Task<>() {
             @Override
@@ -125,7 +125,7 @@ public class VideoLoader {
                     String[] videoInfo = getVideoInfo(url);
                     streamUrlQueue.add(new SimpleEntry<>(streamUrl, videoInfo));
 
-                    notifyQueueUpdate();
+                    notifyQueueUpdate(true);
 
                     System.out.println("Current queue length: " + streamUrlQueue.size());
                 } catch (IOException | InterruptedException e) {
@@ -180,6 +180,7 @@ public class VideoLoader {
     }
 
     public static SimpleEntry<String, String[]> pollStreamUrl() {
+        notifyQueueUpdate(false);
         return streamUrlQueue.poll();
     }
 
@@ -192,10 +193,23 @@ public class VideoLoader {
         while (iterator.hasNext()) {
             SimpleEntry<String, String[]> entry = iterator.next();
             if (entry.getKey().equals(key)) {
+                notifyQueueUpdate(false);
                 iterator.remove();
                 break;
             }
         }
+    }
+
+    public static SimpleEntry<String, String[]> pollVideoFromQueueByUrl(String key) {
+        Iterator<SimpleEntry<String, String[]>> iterator = streamUrlQueue.iterator();
+        while (iterator.hasNext()) {
+            SimpleEntry<String, String[]> entry = iterator.next();
+            if (entry.getKey().equals(key)) {
+                iterator.remove();
+                return entry;
+            }
+        }
+        return null;
     }
 
     public static boolean isQueueEmpty() {
