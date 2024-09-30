@@ -3,22 +3,26 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.media.MediaView?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.media.*?>
+<?import javafx.scene.text.*?>
+
 <HBox id="mainPanel" prefHeight="600" prefWidth="800" stylesheets="@css/style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.stiffrock.AppController">
     <VBox id="viewPanel" alignment="CENTER" layoutX="14.0" layoutY="31.0" prefHeight="600.0" prefWidth="591.0" spacing="10" HBox.hgrow="ALWAYS">
-        <StackPane fx:id="mediaViewPanel" id="mediaViewPanel" layoutX="79.0" layoutY="30.0" maxHeight="360" maxWidth="640">
+        <StackPane id="mediaViewPanel" fx:id="mediaViewPanel" layoutX="79.0" layoutY="30.0" maxHeight="360" maxWidth="640">
             <ProgressIndicator fx:id="progressInd" visible="false" />
-            <MediaView fx:id="mediaView" fitHeight="360" fitWidth="640"/>
+            <MediaView fx:id="mediaView" fitHeight="360" fitWidth="640" />
         </StackPane>
         <Label fx:id="lblVideoTitle" layoutX="86.0" layoutY="433.0" maxWidth="640" prefHeight="31.0" underline="true">
             <font>
                 <Font size="21.0" />
             </font>
         </Label>
-        <Slider fx:id="progressBar" disable="true" layoutX="90.0" layoutY="406.0" maxWidth="640" prefHeight="18.0" />
+        <HBox alignment="CENTER" layoutX="86.0" layoutY="471.0" maxWidth="640" prefHeight="34.0" spacing="5">
+            <Slider fx:id="progressBar" disable="true" prefHeight="18.0" prefWidth="550" />
+            <Label alignment="CENTER" contentDisplay="CENTER" prefWidth="80" text="00:00/00:00" />
+        </HBox>
         <HBox alignment="CENTER" layoutX="86.0" layoutY="471.0" maxWidth="640" prefHeight="34.0" spacing="10">
-            <TextField fx:id="tfUrl" layoutX="125.0" layoutY="95.0" maxHeight="25.0" prefHeight="25.0" prefWidth="606" promptText="Youtube Url..." text="https://www.youtube.com/watch?v=hCkXqbqmv6Q&amp;list=PL3NkqQUxnB3DIjKVkQInPUY5GOzcIWi1_">
+            <TextField fx:id="tfUrl" layoutX="125.0" layoutY="95.0" prefHeight="25.0" prefWidth="606" promptText="Youtube Url..." text="https://www.youtube.com/watch?v=hCkXqbqmv6Q&amp;list=PL3NkqQUxnB3DIjKVkQInPUY5GOzcIWi1_">
                 <font>
                     <Font size="9.0" />
                 </font>
@@ -31,7 +35,7 @@
                 </graphic>
             </Button>
         </HBox>
-        <HBox id="buttonsPanel" alignment="CENTER" layoutX="302.0" layoutY="508.0" prefHeight="24.0" maxWidth="640" spacing="10">
+        <HBox id="buttonsPanel" alignment="CENTER" layoutX="302.0" layoutY="508.0" maxWidth="640" prefHeight="24.0" spacing="10">
             <Button fx:id="btnPlayPause" disable="true" mnemonicParsing="false" onAction="#changeVideoState">
                 <graphic>
                     <ImageView disable="true">
@@ -65,11 +69,14 @@
             </ImageView>
             <Slider fx:id="volumeSlider" value="50.0" />
             <Button mnemonicParsing="false" onAction="#toggleQueueVisibility" text="Queue" />
+         <Button mnemonicParsing="false" onAction="#delete" text="Delete" />
         </HBox>
     </VBox>
-    <VBox id="queuePanel" fx:id="queuePanel" managed="false" prefWidth="367.0" visible="false">
+    <VBox id="queuePanel" fx:id="queueContainer" managed="false" prefWidth="367.0" visible="false">
         <TitledPane animated="false" collapsible="false" prefWidth="315.0" text="Video Queue">
-            <VBox prefHeight="815.0" prefWidth="359.0" />
+            <ScrollPane hbarPolicy="NEVER" vbarPolicy="ALWAYS">
+                <VBox id="queueListPanel" fx:id="queueDisplayPanel" alignment="TOP_CENTER" spacing="15" VBox.vgrow="ALWAYS" />
+            </ScrollPane>
         </TitledPane>
     </VBox>
 </HBox>

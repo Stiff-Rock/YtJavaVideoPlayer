@@ -7,13 +7,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class VideoLoader {
     public static String ytdlpPath;
     private static final Queue<String> videoUrls = new LinkedList<>();
-    private static final Queue<SimpleEntry<String, String>> streamUrlQueue = new LinkedList<>();
+    private static final LinkedList<SimpleEntry<String, String[]>> streamUrlQueue = new LinkedList<>();
     private static Runnable onQueueUpdate;
 
     public static void setOnQueueUpdateListener(Runnable listener) {
@@ -71,7 +72,7 @@ public class VideoLoader {
                     String[] Urls = urlsBuilder.toString().split("\n");
                     Collections.addAll(videoUrls, Urls);
                 } catch (IOException | InterruptedException e) {
-                    System.err.println("Error getting video Url. " +  e.getMessage());
+                    System.err.println("Error getting video Url. " + e.getMessage());
                 }
 
                 System.out.println(videoUrls.size() + " URLs loaded.");
@@ -121,14 +122,14 @@ public class VideoLoader {
                     }
 
                     String streamUrl = videoUrlBuilder.toString().trim();
-                    String title = getVideoTitle(url);
-                    streamUrlQueue.add(new SimpleEntry<>(streamUrl, title));
+                    String[] videoInfo = getVideoInfo(url);
+                    streamUrlQueue.add(new SimpleEntry<>(streamUrl, videoInfo));
 
                     notifyQueueUpdate();
 
                     System.out.println("Current queue length: " + streamUrlQueue.size());
                 } catch (IOException | InterruptedException e) {
-                    System.err.println("Error retrieving stream Url. " +  e.getMessage());
+                    System.err.println("Error retrieving stream Url. " + e.getMessage());
                 }
 
                 if (!videoUrls.isEmpty()) {
@@ -143,9 +144,9 @@ public class VideoLoader {
         };
     }
 
-    public static String getVideoTitle(String videoUrl) {
+    public static String[] getVideoInfo(String videoUrl) {
         try {
-            Process process = new ProcessBuilder(ytdlpPath, "--get-title", videoUrl).start();
+            Process process = new ProcessBuilder(ytdlpPath, "--get-title", "--get-thumbnail", "--get-duration", videoUrl).start();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             StringBuilder errorOutput = new StringBuilder();
@@ -164,21 +165,38 @@ public class VideoLoader {
             }
 
             String title = reader.readLine();
+            String thumbnailUrl = reader.readLine();
+            String duration = reader.readLine();
             reader.close();
 
-            System.out.println("Playing: " + title);
+            System.out.println("Playing: " + title + " (" + duration + ")");
 
-            return title;
+            return new String[]{title, thumbnailUrl, duration};
         } catch (IOException | InterruptedException e) {
-            System.err.println("Error getting video title: " +  e.getMessage());
-
+            System.err.println("Error getting video info: " + e.getMessage());
         }
 
         return null;
     }
 
-    public static SimpleEntry<String, String> pollStreamUrl() {
+
+    public static SimpleEntry<String, String[]> pollStreamUrl() {
         return streamUrlQueue.poll();
+    }
+
+    public static SimpleEntry<String, String[]> peekVideoFromQueue(int index) {
+        return streamUrlQueue.get(index);
+    }
+
+    public static void removeVideoFromQueue(String key) {
+        Iterator<SimpleEntry<String, String[]>> iterator = streamUrlQueue.iterator();
+        while (iterator.hasNext()) {
+            SimpleEntry<String, String[]> entry = iterator.next();
+            if (entry.getKey().equals(key)) {
+                iterator.remove();
+                break;
+            }
+        }
     }
 
     public static boolean isQueueEmpty() {

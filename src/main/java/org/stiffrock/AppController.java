@@ -1,10 +1,14 @@
 package org.stiffrock;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
@@ -12,6 +16,7 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.util.Duration;
 
+import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Objects;
 
@@ -22,11 +27,13 @@ public class AppController {
     //TODO Fade in/out
     //TODO Botón para poner canción en bucle
     //TODO Botón next con fade in/out
-    //TODO Gestionar y visualizar cola
+    //TODO Gestionar y visualizar cola con tarjetas
     //TODO Documentar código
-    //TODO Autoplay??
     //TODO Reintentar cargar video
     //TODO Animacion slider volumen
+    //TODO AUTOPLAY NO VA
+    //TODO NEW MEDIA zona da error
+    //TODO Poner duración y que se adapte
 
     private ImageView play;
     private ImageView pause;
@@ -59,13 +66,20 @@ public class AppController {
     private Slider volumeSlider;
     private static double masterVolume = 1.0;
     @FXML
-    private VBox queuePanel;
+    private VBox queueContainer;
+    @FXML
+    private VBox queueDisplayPanel;
 
     private MediaPlayer mediaPlayer;
 
     private boolean isProgressBarDragged;
     private boolean isLoopEnabled;
     private boolean isAutoplayEnabled;
+
+    @FXML
+    private void delete() {
+        queueDisplayPanel.getChildren().remove(0);
+    }
 
     @FXML
     public void initialize() {
@@ -89,6 +103,7 @@ public class AppController {
 
         VideoLoader.setOnQueueUpdateListener(() -> {
             if (mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
+                addVideoCardToQueue(VideoLoader.peekVideoFromQueue(VideoLoader.getQueueSize() - 1));
                 btnNext.setDisable(false);
             }
         });
@@ -147,6 +162,26 @@ public class AppController {
         }
     }
 
+    private void addVideoCardToQueue(SimpleEntry<String, String[]> videoInfo) {
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("queueCard.fxml"));
+                AnchorPane videoCard = loader.load();
+
+                VideoCardController controller = loader.getController();
+                controller.setVideo(videoInfo);
+
+                queueDisplayPanel.getChildren().add(videoCard);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void pollVideoCardQueue() {
+        queueDisplayPanel.getChildren().remove(0);
+    }
+
     @FXML
     private void changeVideoState() {
         if (isNotPlaying()) {
@@ -200,9 +235,9 @@ public class AppController {
     }
 
     private void displayVideo() {
-        SimpleEntry<String, String> video = VideoLoader.pollStreamUrl();
+        SimpleEntry<String, String[]> video = VideoLoader.pollStreamUrl();
 
-        lblVideoTitle.setText(video.getValue());
+        lblVideoTitle.setText(video.getValue()[0]);
         Media media = new Media(video.getKey());
 
         mediaPlayer = new MediaPlayer(media);
@@ -260,11 +295,11 @@ public class AppController {
 
     @FXML
     private void toggleQueueVisibility() {
-        queuePanel.setVisible(!queuePanel.isVisible());
-        queuePanel.setManaged(!queuePanel.isManaged());
+        queueContainer.setVisible(!queueContainer.isVisible());
+        queueContainer.setManaged(!queueContainer.isManaged());
 
-        int width = queuePanel.isVisible() ? 480 : 640;
-        int height = queuePanel.isVisible() ? 270 : 360;
+        int width = queueContainer.isVisible() ? 480 : 640;
+        int height = queueContainer.isVisible() ? 270 : 360;
 
         mediaViewPanel.setMaxWidth(width);
         mediaViewPanel.setMaxHeight(height);
