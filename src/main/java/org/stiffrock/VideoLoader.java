@@ -5,8 +5,6 @@ import javafx.concurrent.Task;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
 import java.util.Iterator;
@@ -29,6 +27,7 @@ public class VideoLoader {
             onQueueUpdate.accept(newAddedToQueue);  // Pass the boolean to the listener
         }
     }
+
     public static Task<Void> loadVideoUrl(String videoUrl) {
         return new Task<>() {
             @Override
@@ -73,12 +72,11 @@ public class VideoLoader {
                     }
 
                     String[] Urls = urlsBuilder.toString().split("\n");
+                    System.out.println(Urls.length+ " URLs loaded.");
                     Collections.addAll(videoUrls, Urls);
                 } catch (IOException | InterruptedException e) {
                     System.err.println("Error getting video Url. " + e.getMessage());
                 }
-
-                System.out.println(videoUrls.size() + " URLs loaded.");
 
                 return null;
             }
@@ -96,46 +94,66 @@ public class VideoLoader {
                 }
 
                 String url = videoUrls.poll();
-                ProcessBuilder processBuilder = new ProcessBuilder(ytdlpPath, "-g", url);
 
-                StringBuilder videoUrlBuilder = new StringBuilder();
-                StringBuilder errorOutput = new StringBuilder();
+                boolean correctStreamUrl = false;
+                int tries = 0;
 
-                try {
-                    System.out.println("--------------------");
-                    System.out.println("Loading Stream Url...");
+                System.out.println("--------------------");
+                System.out.println("Loading Stream Url...");
 
-                    Process process = processBuilder.start();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                do {
+                    ProcessBuilder processBuilder = new ProcessBuilder(ytdlpPath, "-g", url);
 
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        videoUrlBuilder.append(line).append("\n");
+                    StringBuilder videoUrlBuilder = new StringBuilder();
+                    StringBuilder errorOutput = new StringBuilder();
+
+                    try {
+                        Process process = processBuilder.start();
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            videoUrlBuilder.append(line).append("\n");
+                        }
+
+                        BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                        while ((line = errorReader.readLine()) != null) {
+                            errorOutput.append(line).append("\n");
+                        }
+
+                        reader.close();
+                        errorReader.close();
+
+                        int exitCode = process.waitFor();
+                        if (exitCode != 0) {
+                            throw new IOException("Exit code: " + exitCode + "\n" + errorOutput.toString().trim());
+                        }
+
+                        String streamUrl = videoUrlBuilder.toString().trim();
+                        String[] urlArray = streamUrl.split("\n");
+
+                        if (urlArray.length == 1) {
+                            correctStreamUrl = true;
+                            System.out.println("Correctly loaded streamUrl");
+                        } else if (urlArray.length == 2) {
+                            tries++;
+                            throw new InterruptedException("Two separate stream URLs detected, retrying... (Iteration nº" + tries + ")");
+                        }
+
+                        String[] videoInfo = getVideoInfo(url);
+                        streamUrlQueue.add(new SimpleEntry<>(streamUrl, videoInfo));
+
+                        notifyQueueUpdate(true);
+
+                        System.out.println("Current queue length: " + streamUrlQueue.size());
+                    } catch (IOException | InterruptedException e) {
+                        System.err.println("Error retrieving stream Url: " + e.getMessage());
                     }
+                } while (!correctStreamUrl && tries != 3);
 
-                    BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-                    while ((line = errorReader.readLine()) != null) {
-                        errorOutput.append(line).append("\n");
-                    }
-
-                    reader.close();
-                    errorReader.close();
-
-                    int exitCode = process.waitFor();
-                    if (exitCode != 0) {
-                        throw new IOException("Exit code: " + exitCode + "\n" + errorOutput.toString().trim());
-                    }
-
-                    String streamUrl = videoUrlBuilder.toString().trim();
-
-                    String[] videoInfo = getVideoInfo(url);
-                    streamUrlQueue.add(new SimpleEntry<>(streamUrl, videoInfo));
-
-                    notifyQueueUpdate(true);
-
-                    System.out.println("Current queue length: " + streamUrlQueue.size());
-                } catch (IOException | InterruptedException e) {
-                    System.err.println("Error retrieving stream Url. " + e.getMessage());
+                if (tries == 3) {
+                    System.err.println("Video could not be loaded.");
+                    return null;
                 }
 
                 if (!videoUrls.isEmpty()) {

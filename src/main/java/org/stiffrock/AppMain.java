@@ -29,9 +29,9 @@ public class AppMain extends Application {
 
         String ytdlpPath;
         if (os.contains("win")) {
-            ytdlpPath = "lib/yt-dlp.exe";
+            ytdlpPath = "bin/yt-dlp.exe";
         } else if (os.contains("nix") || os.contains("nux") || os.contains("mac")) {
-            ytdlpPath = "lib/yt-dlp_linux";
+            ytdlpPath = "bin/yt-dlp_linux";
         } else {
             throw new UnsupportedOperationException("Unsupported operating system: " + os);
         }

@@ -16,23 +16,16 @@ import javafx.scene.media.MediaView;
 import javafx.util.Duration;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Objects;
 
 public class AppController {
 
-    //TODO Documentar código
-    //TODO Fade in/out
-    //TODO Botón next con fade in/out
     //TODO Gestionar y visualizar cola con tarjetas
     //TODO Reintentar cargar video
     //TODO Animacion slider volumen
     //TODO AUTOPLAY NO VA
-    //TODO Cargar el mediaPlayer da error a veces
+    //TODO Cargar media da error a veces, crear bucle hasta que vaya
     //TODO Reintentar cuando el media falla al callar
     //TODO Loading indicator in video cards
 
@@ -233,22 +226,12 @@ public class AppController {
     private void displayVideo(SimpleEntry<String, String[]> video) {
         lblVideoTitle.setText(video.getValue()[0]);
 
-        URI videoUri = null;
-        try {
-            URL videoUrl = new URL(video.getKey());
-            System.out.println("VIDEO URL: " + video.getKey() + "\n");
-            videoUri = videoUrl.toURI();
-        } catch (MalformedURLException | URISyntaxException e) {
-            System.err.println("Error loading video Url to media: " + e.getMessage());
-        }
-
-        if (videoUri == null) {
-            System.err.println("IS NULL");
-            return;
-        }
-
-        Media media = new Media(videoUri.toString());
+        progressInd.setVisible(true);
+        System.out.println("TRUE");
+        
+        Media media = new Media(video.getKey());
         mediaPlayer = new MediaPlayer(media);
+
         mediaPlayer.setOnReady(() -> {
             lblVideoCurrentTime.setText("00:00");
             lblVideoDuration.setText(formatTime(mediaPlayer.getTotalDuration().toSeconds()));
@@ -265,7 +248,9 @@ public class AppController {
         btnPlayPause.setDisable(false);
         btnAutoplay.setDisable(false);
         btnLoop.setDisable(false);
+
         progressInd.setVisible(false);
+        System.out.println("FALSE");
 
         MediaPlayer finalMediaPlayer = mediaPlayer;
         mediaPlayer.setOnError(() -> {
