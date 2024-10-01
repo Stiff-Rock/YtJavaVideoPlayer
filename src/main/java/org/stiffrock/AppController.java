@@ -16,6 +16,10 @@ import javafx.scene.media.MediaView;
 import javafx.util.Duration;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Objects;
 
@@ -28,10 +32,7 @@ public class AppController {
     //TODO Reintentar cargar video
     //TODO Animacion slider volumen
     //TODO AUTOPLAY NO VA
-    //TODO NEW MEDIA zona da error
-    //TODO Cambiar btnToggleQueue a un toggle o cambiar de icono
-    //TODO Cargar videos individuales sustituye el mediaPlayer cada vez
-    //TODO Títulos se cortan
+    //TODO Cargar el mediaPlayer da error a veces
     //TODO Reintentar cuando el media falla al callar
     //TODO Loading indicator in video cards
 
@@ -102,21 +103,13 @@ public class AppController {
 
         volumeSlider.valueProperty().addListener((obs, oldValue, newValue) -> {
             masterVolume = newValue.doubleValue() / 100;
-            updateMediaPlayerVolumes();
+            if (mediaPlayer != null)
+                mediaPlayer.setVolume(masterVolume);
         });
-
-        progressBar.setMin(0);
-        progressBar.setMax(100);
-    }
-
-    private void updateMediaPlayerVolumes() {
-        if (mediaPlayer != null) {
-            mediaPlayer.setVolume(masterVolume);
-        }
     }
 
     @FXML
-    private void load() {
+    private void loadBtn() {
         String videoUrl = tfUrl.getText();
 
         if (videoUrl == null) {
@@ -184,14 +177,14 @@ public class AppController {
     @FXML
     private void changeVideoState() {
         if (isNotPlaying()) {
-            play();
+            playBtn();
         } else if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
-            pause();
+            pauseBtn();
         }
     }
 
     @FXML
-    private void next() {
+    private void nextBtn() {
         if (mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
             changeVideo(VideoLoader.pollStreamUrl());
             pollVideoCardQueue();
@@ -207,21 +200,21 @@ public class AppController {
     }
 
     @FXML
-    private void play() {
+    private void playBtn() {
         mediaPlayer.play();
 
         toggleBtnPlayPause(pause);
     }
 
     @FXML
-    private void pause() {
+    private void pauseBtn() {
         mediaPlayer.pause();
 
         toggleBtnPlayPause(play);
     }
 
     @FXML
-    private void setLoopOption() {
+    private void loopBtn() {
         if (mediaPlayer != null) {
             isLoopEnabled = !isLoopEnabled;
             btnLoop.setGraphic(isLoopEnabled ? loopEnabled : loopDisabled);
@@ -230,7 +223,7 @@ public class AppController {
     }
 
     @FXML
-    private void setAutoplayOption() {
+    private void autoplayBtn() {
         if (mediaPlayer != null) {
             isAutoplayEnabled = !isAutoplayEnabled;
             btnAutoplay.setGraphic(isAutoplayEnabled ? autoplayEnabled : autoplayDisabled);
@@ -239,8 +232,22 @@ public class AppController {
 
     private void displayVideo(SimpleEntry<String, String[]> video) {
         lblVideoTitle.setText(video.getValue()[0]);
-        Media media = new Media(video.getKey());
 
+        URI videoUri = null;
+        try {
+            URL videoUrl = new URL(video.getKey());
+            System.out.println("VIDEO URL: " + video.getKey() + "\n");
+            videoUri = videoUrl.toURI();
+        } catch (MalformedURLException | URISyntaxException e) {
+            System.err.println("Error loading video Url to media: " + e.getMessage());
+        }
+
+        if (videoUri == null) {
+            System.err.println("IS NULL");
+            return;
+        }
+
+        Media media = new Media(videoUri.toString());
         mediaPlayer = new MediaPlayer(media);
         mediaPlayer.setOnReady(() -> {
             lblVideoCurrentTime.setText("00:00");
@@ -299,16 +306,10 @@ public class AppController {
                 double totalDuration = mediaPlayer.getTotalDuration().toSeconds();
                 if (totalDuration > 0) {
                     progressBar.setValue((currentTime / totalDuration) * 100);
-                    updateDurationLabel(currentTime);
+                    lblVideoCurrentTime.setText(formatTime(currentTime));
                 }
             }
         });
-    }
-
-    // Method to update lblVideoDuration text
-    private void updateDurationLabel(double currentTime) {
-        String currentTimeFormatted = formatTime(currentTime);
-        lblVideoCurrentTime.setText(currentTimeFormatted);
     }
 
     // Helper method to format time in minutes:seconds
@@ -324,9 +325,8 @@ public class AppController {
         }
     }
 
-
     @FXML
-    private void toggleQueueVisibility() {
+    private void toggleQueueBtn() {
         isQueueVisible = !isQueueVisible;
 
         queueContainer.setVisible(isQueueVisible);

@@ -41,7 +41,7 @@
                     <Font size="9.0"/>
                 </font>
             </TextField>
-            <Button layoutX="684.0" layoutY="95.0" mnemonicParsing="false" onAction="#load" prefHeight="24.0"
+            <Button layoutX="684.0" layoutY="95.0" mnemonicParsing="false" onAction="#loadBtn" prefHeight="24.0"
                     prefWidth="34.0">
                 <graphic>
                     <ImageView>
@@ -59,21 +59,21 @@
                     </ImageView>
                 </graphic>
             </Button>
-            <Button fx:id="btnNext" disable="true" mnemonicParsing="false" onAction="#next">
+            <Button fx:id="btnNext" disable="true" mnemonicParsing="false" onAction="#nextBtn">
                 <graphic>
                     <ImageView>
                         <Image url="@media/next.png"/>
                     </ImageView>
                 </graphic>
             </Button>
-            <Button fx:id="btnLoop" disable="true" mnemonicParsing="false" onAction="#setLoopOption">
+            <Button fx:id="btnLoop" disable="true" mnemonicParsing="false" onAction="#loopBtn">
                 <graphic>
                     <ImageView>
                         <Image url="@media/loop0.png"/>
                     </ImageView>
                 </graphic>
             </Button>
-            <Button fx:id="btnAutoplay" disable="true" mnemonicParsing="false" onAction="#setAutoplayOption">
+            <Button fx:id="btnAutoplay" disable="true" mnemonicParsing="false" onAction="#autoplayBtn">
                 <graphic>
                     <ImageView>
                         <Image url="@media/autoplay0.png"/>
@@ -84,7 +84,7 @@
                 <Image url="@media/speaker.png"/>
             </ImageView>
             <Slider fx:id="volumeSlider" value="50.0"/>
-            <Button fx:id="btnToggleQueue" mnemonicParsing="false" onAction="#toggleQueueVisibility" text="Show Queue">
+            <Button fx:id="btnToggleQueue" mnemonicParsing="false" onAction="#toggleQueueBtn" text="Show Queue">
                 <graphic>
                     <ImageView>
                         <Image url="@media/queue1.png"/>
