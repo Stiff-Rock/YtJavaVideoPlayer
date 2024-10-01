@@ -22,9 +22,7 @@ import java.util.Objects;
 public class AppController {
 
     //TODO Documentar código
-    //TODO Pantalla de cola
     //TODO Fade in/out
-    //TODO Botón para poner canción en bucle
     //TODO Botón next con fade in/out
     //TODO Gestionar y visualizar cola con tarjetas
     //TODO Reintentar cargar video
@@ -35,6 +33,7 @@ public class AppController {
     //TODO Cargar videos individuales sustituye el mediaPlayer cada vez
     //TODO Títulos se cortan
     //TODO Reintentar cuando el media falla al callar
+    //TODO Loading indicator in video cards
 
     private ImageView play;
     private ImageView pause;
@@ -127,8 +126,10 @@ public class AppController {
 
         Task<Void> loadingTask;
         if (videoUrl.contains("list=")) {
+            System.out.println("Entered Url corresponds to a playlist");
             loadingTask = VideoLoader.loadPlaylistUrls(videoUrl);
         } else {
+            System.out.println("Entered Url corresponds to a video");
             loadingTask = VideoLoader.loadVideoUrl(videoUrl);
         }
 
@@ -138,7 +139,10 @@ public class AppController {
     private void loadTask(Task<Void> startUrlLoading) {
         startUrlLoading.setOnSucceeded(event -> {
             Task<Void> streamLoadingTask = VideoLoader.retrieveStreamUrl();
-            streamLoadingTask.setOnSucceeded(streamEvent -> displayVideo(VideoLoader.pollStreamUrl()));
+            streamLoadingTask.setOnSucceeded(streamEvent -> {
+                if (mediaPlayer == null)
+                    displayVideo(VideoLoader.pollStreamUrl());
+            });
 
             new Thread(streamLoadingTask).start();
         });

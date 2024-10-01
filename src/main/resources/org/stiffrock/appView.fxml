@@ -84,7 +84,13 @@
                 <Image url="@media/speaker.png"/>
             </ImageView>
             <Slider fx:id="volumeSlider" value="50.0"/>
-            <Button fx:id="btnToggleQueue" mnemonicParsing="false" onAction="#toggleQueueVisibility" text="Show Queue"/>
+            <Button fx:id="btnToggleQueue" mnemonicParsing="false" onAction="#toggleQueueVisibility" text="Show Queue">
+                <graphic>
+                    <ImageView>
+                        <Image url="@media/queue1.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
         </HBox>
     </VBox>
     <VBox id="queuePanel" fx:id="queueContainer" managed="false" visible="false">

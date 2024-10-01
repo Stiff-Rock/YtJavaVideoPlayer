@@ -37,6 +37,7 @@ public class VideoLoader {
         };
     }
 
+    // Gets each video Url form the playlist
     public static Task<Void> loadPlaylistUrls(String videoUrl) {
         return new Task<>() {
             @Override
@@ -75,18 +76,20 @@ public class VideoLoader {
                     System.err.println("Error getting video Url. " + e.getMessage());
                 }
 
-                System.out.println(videoUrls.size() + " URLs loaded.");
+                System.out.println(videoUrls.size() + " URLs loaded.\n");
 
                 return null;
             }
         };
     }
 
+    // Goes through the videoUrls list to get every stream url from the video Urls
     public static Task<Void> retrieveStreamUrl() {
         return new Task<>() {
             @Override
             protected Void call() {
                 if (videoUrls.isEmpty()) {
+                    System.err.println("Error: Url queue is empty");
                     return null;
                 }
 
@@ -118,7 +121,7 @@ public class VideoLoader {
 
                     int exitCode = process.waitFor();
                     if (exitCode != 0) {
-                        throw new IOException("Exit code: " + exitCode + "\nError: " + errorOutput.toString().trim());
+                        throw new IOException("Exit code: " + exitCode + "\n" + errorOutput.toString().trim());
                     }
 
                     String streamUrl = videoUrlBuilder.toString().trim();
@@ -161,7 +164,7 @@ public class VideoLoader {
 
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new IOException("Exit code: " + exitCode + "\nError: " + errorOutput.toString().trim());
+                throw new IOException("Exit code: " + exitCode + "\n" + errorOutput.toString().trim());
             }
 
             String title = reader.readLine();
