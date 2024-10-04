@@ -1,0 +1,24 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="VideoPlayer:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/VideoPlayer_jar</output-path>
+    <root id="archive" name="VideoPlayer.jar">
+      <element id="module-output" name="VideoPlayer" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/openjfx/javafx-base/23/javafx-base-23-win.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/twelvemonkeys/common/common-lang/3.11.0/common-lang-3.11.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/openjfx/javafx-graphics/23/javafx-graphics-23.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/twelvemonkeys/imageio/imageio-core/3.11.0/imageio-core-3.11.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/twelvemonkeys/common/common-io/3.11.0/common-io-3.11.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/openjfx/javafx-controls/23/javafx-controls-23-win.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/openjfx/javafx-graphics/23/javafx-graphics-23-win.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/openjfx/javafx-fxml/23/javafx-fxml-23.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/openjfx/javafx-media/23/javafx-media-23.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/openjfx/javafx-controls/23/javafx-controls-23.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/openjfx/javafx-fxml/23/javafx-fxml-23-win.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/twelvemonkeys/imageio/imageio-webp/3.11.0/imageio-webp-3.11.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/twelvemonkeys/common/common-image/3.11.0/common-image-3.11.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/openjfx/javafx-media/23/javafx-media-23-win.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/openjfx/javafx-base/23/javafx-base-23.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/twelvemonkeys/imageio/imageio-metadata/3.11.0/imageio-metadata-3.11.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

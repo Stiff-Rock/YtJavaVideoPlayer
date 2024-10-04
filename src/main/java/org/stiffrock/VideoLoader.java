@@ -72,7 +72,7 @@ public class VideoLoader {
                     }
 
                     String[] Urls = urlsBuilder.toString().split("\n");
-                    System.out.println(Urls.length+ " URLs loaded.");
+                    System.out.println(Urls.length + " URLs loaded.");
                     Collections.addAll(videoUrls, Urls);
                 } catch (IOException | InterruptedException e) {
                     System.err.println("Error getting video Url. " + e.getMessage());
@@ -96,13 +96,12 @@ public class VideoLoader {
                 String url = videoUrls.poll();
 
                 boolean correctStreamUrl = false;
-                int tries = 0;
 
                 System.out.println("--------------------");
                 System.out.println("Loading Stream Url...");
 
                 do {
-                    ProcessBuilder processBuilder = new ProcessBuilder(ytdlpPath, "-g", url);
+                    ProcessBuilder processBuilder = new ProcessBuilder(ytdlpPath, "-f b", "-g", url);
 
                     StringBuilder videoUrlBuilder = new StringBuilder();
                     StringBuilder errorOutput = new StringBuilder();
@@ -125,20 +124,16 @@ public class VideoLoader {
                         errorReader.close();
 
                         int exitCode = process.waitFor();
-                        if (exitCode != 0) {
-                            throw new IOException("Exit code: " + exitCode + "\n" + errorOutput.toString().trim());
+
+                        if (exitCode == 1) {
+                            throw new IOException("Retrying request...");
+                        } else if (exitCode != 0) {
+                            throw new IOException("Error retrieving stream Url - Exit code: " + exitCode + "\n" + errorOutput.toString().trim());
+                        } else {
+                            correctStreamUrl = true;
                         }
 
                         String streamUrl = videoUrlBuilder.toString().trim();
-                        String[] urlArray = streamUrl.split("\n");
-
-                        if (urlArray.length == 1) {
-                            correctStreamUrl = true;
-                            System.out.println("Correctly loaded streamUrl");
-                        } else if (urlArray.length == 2) {
-                            tries++;
-                            throw new InterruptedException("Two separate stream URLs detected, retrying... (Iteration nº" + tries + ")");
-                        }
 
                         String[] videoInfo = getVideoInfo(url);
                         streamUrlQueue.add(new SimpleEntry<>(streamUrl, videoInfo));
@@ -147,14 +142,9 @@ public class VideoLoader {
 
                         System.out.println("Current queue length: " + streamUrlQueue.size());
                     } catch (IOException | InterruptedException e) {
-                        System.err.println("Error retrieving stream Url: " + e.getMessage());
+                        System.err.println(e.getMessage());
                     }
-                } while (!correctStreamUrl && tries != 3);
-
-                if (tries == 3) {
-                    System.err.println("Video could not be loaded.");
-                    return null;
-                }
+                } while (!correctStreamUrl);
 
                 if (!videoUrls.isEmpty()) {
                     new Thread(retrieveStreamUrl()).start();

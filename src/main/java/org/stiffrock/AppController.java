@@ -227,7 +227,7 @@ public class AppController {
         lblVideoTitle.setText(video.getValue()[0]);
 
         progressInd.setVisible(true);
-        System.out.println("TRUE");
+        System.out.println("Display Video Loading: TRUE");
         
         Media media = new Media(video.getKey());
         mediaPlayer = new MediaPlayer(media);
@@ -250,7 +250,7 @@ public class AppController {
         btnLoop.setDisable(false);
 
         progressInd.setVisible(false);
-        System.out.println("FALSE");
+        System.out.println("Display Video Loading: FALSE");
 
         MediaPlayer finalMediaPlayer = mediaPlayer;
         mediaPlayer.setOnError(() -> {
