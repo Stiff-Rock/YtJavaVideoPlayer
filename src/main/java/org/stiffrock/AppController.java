@@ -18,16 +18,23 @@ import javafx.util.Duration;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class AppController {
 
-    //TODO Gestionar y visualizar cola con tarjetas
-    //TODO Reintentar cargar video
-    //TODO Animacion slider volumen
-    //TODO AUTOPLAY NO VA
-    //TODO Cargar media da error a veces, crear bucle hasta que vaya
-    //TODO Reintentar cuando el media falla al callar
+    //TODO Animacion de mostrar/ocultar slider volumen
     //TODO Loading indicator in video cards
+    //TODO FadeOut
+    //TODO Autoplay next video change
+    //TODO make it so you cant use btnNext while card is loading
+    //TODO using btnNext too fast breaks it
+
+    /* TODO:
+     * Error loading current media: [com.sun.media.jfxmediaimpl.platform.gstreamer.GSTMediaPlayer@4759d1aa] ERROR_MEDIA_INVALID: ERROR_MEDIA_INVALID
+     * Troubleshooting info:
+     *  - Media: javafx.scene.media.Media@1d562ce4
+     *  - Stream Url:
+     */
 
     private ImageView play;
     private ImageView pause;
@@ -64,7 +71,6 @@ public class AppController {
     private Slider progressBar;
     @FXML
     private Slider volumeSlider;
-    private static double masterVolume = 1.0;
     @FXML
     private VBox queueContainer;
     @FXML
@@ -72,7 +78,9 @@ public class AppController {
     @FXML
     private TitledPane queueTitledPanel;
 
+    private static double masterVolume = 1.0;
     private MediaPlayer mediaPlayer;
+    private VideoCardController currentVideoCardController;
 
     private boolean isProgressBarDragged;
     private boolean isLoopEnabled;
@@ -85,7 +93,7 @@ public class AppController {
 
         VideoLoader.setOnQueueUpdateListener(newAddedToQueue -> {
             if (newAddedToQueue && mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
-                addVideoCardToQueue(VideoLoader.peekVideoFromQueue(VideoLoader.getQueueSize() - 1));
+                currentVideoCardController.setVideo(VideoLoader.peekVideoFromQueue(VideoLoader.getQueueSize() - 1));
                 btnNext.setDisable(false);
             } else if (!newAddedToQueue && VideoLoader.isQueueEmpty()) {
                 btnNext.setDisable(true);
@@ -96,8 +104,7 @@ public class AppController {
 
         volumeSlider.valueProperty().addListener((obs, oldValue, newValue) -> {
             masterVolume = newValue.doubleValue() / 100;
-            if (mediaPlayer != null)
-                mediaPlayer.setVolume(masterVolume);
+            if (mediaPlayer != null) mediaPlayer.setVolume(masterVolume);
         });
     }
 
@@ -119,38 +126,50 @@ public class AppController {
             loadingTask = VideoLoader.loadVideoUrl(videoUrl);
         }
 
-        loadTask(loadingTask);
+        loadUrlsTask(loadingTask);
     }
 
-    private void loadTask(Task<Void> startUrlLoading) {
-        startUrlLoading.setOnSucceeded(event -> {
-            Task<Void> streamLoadingTask = VideoLoader.retrieveStreamUrl();
-            streamLoadingTask.setOnSucceeded(streamEvent -> {
-                if (mediaPlayer == null)
-                    displayVideo(VideoLoader.pollStreamUrl());
-            });
+    private void loadUrlsTask(Task<Void> startUrlLoading) {
+        startUrlLoading.setOnSucceeded(event -> loadNextStream());
 
-            new Thread(streamLoadingTask).start();
-        });
-
-        if (mediaPlayer == null)
-            progressInd.setVisible(true);
+        if (mediaPlayer == null) progressInd.setVisible(true);
 
         new Thread(startUrlLoading).start();
     }
 
-    private void addVideoCardToQueue(SimpleEntry<String, String[]> videoInfo) {
+    private void loadNextStream() {
+        Task<Void> streamLoadingTask = VideoLoader.retrieveStreamUrl();
+
+        streamLoadingTask.setOnSucceeded(streamEvent -> {
+            if (mediaPlayer == null) {
+                displayVideo(VideoLoader.pollStreamUrl());
+            }
+
+            if (VideoLoader.getVideoRequestsSize() != 0) {
+                addVideoCardToQueue();
+                loadNextStream();
+            }
+
+            if (VideoLoader.getVideoRequestsSize() == 0) {
+                System.out.println("--------------------");
+                System.out.println("Finished loading video/s");
+                System.out.println("--------------------");
+            }
+        });
+
+        new Thread(streamLoadingTask).start();
+    }
+
+    private void addVideoCardToQueue() {
         Platform.runLater(() -> {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("queueCard.fxml"));
                 HBox videoCard = loader.load();
 
-                VideoCardController controller = loader.getController();
+                currentVideoCardController = loader.getController();
 
-                controller.setAppController(this);
-                controller.setParent(queueDisplayPanel);
-
-                controller.setVideo(videoInfo);
+                currentVideoCardController.setAppController(this);
+                currentVideoCardController.setParent(queueDisplayPanel);
 
                 queueDisplayPanel.getChildren().add(videoCard);
             } catch (IOException e) {
@@ -227,12 +246,12 @@ public class AppController {
         lblVideoTitle.setText(video.getValue()[0]);
 
         progressInd.setVisible(true);
-        System.out.println("Display Video Loading: TRUE");
-        
+
         Media media = new Media(video.getKey());
         mediaPlayer = new MediaPlayer(media);
 
         mediaPlayer.setOnReady(() -> {
+            progressInd.setVisible(false);
             lblVideoCurrentTime.setText("00:00");
             lblVideoDuration.setText(formatTime(mediaPlayer.getTotalDuration().toSeconds()));
         });
@@ -241,6 +260,7 @@ public class AppController {
         mediaPlayer.setCycleCount(isLoopEnabled ? MediaPlayer.INDEFINITE : 1);
         mediaPlayer.setAutoPlay(isAutoplayEnabled);
         mediaPlayer.setVolume(masterVolume);
+
         initializeProgressBarListeners();
 
         mediaView.setMediaPlayer(mediaPlayer);
@@ -248,9 +268,6 @@ public class AppController {
         btnPlayPause.setDisable(false);
         btnAutoplay.setDisable(false);
         btnLoop.setDisable(false);
-
-        progressInd.setVisible(false);
-        System.out.println("Display Video Loading: FALSE");
 
         MediaPlayer finalMediaPlayer = mediaPlayer;
         mediaPlayer.setOnError(() -> {
@@ -339,22 +356,16 @@ public class AppController {
     }
 
     private void initializeIcons() {
-        play = new ImageView(new Image(Objects.requireNonNull(
-                getClass().getResourceAsStream("media/play.png"))));
+        play = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/play.png"))));
 
-        pause = new ImageView(new Image(Objects.requireNonNull(
-                getClass().getResourceAsStream("media/pause.png"))));
+        pause = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/pause.png"))));
 
-        loopDisabled = new ImageView(new Image(Objects.requireNonNull(
-                getClass().getResourceAsStream("media/loop0.png"))));
+        loopDisabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/loop0.png"))));
 
-        loopEnabled = new ImageView(new Image(Objects.requireNonNull(
-                getClass().getResourceAsStream("media/loop1.png"))));
+        loopEnabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/loop1.png"))));
 
-        autoplayEnabled = new ImageView(new Image(Objects.requireNonNull(
-                getClass().getResourceAsStream("media/autoplay1.png"))));
+        autoplayEnabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/autoplay1.png"))));
 
-        autoplayDisabled = new ImageView(new Image(Objects.requireNonNull(
-                getClass().getResourceAsStream("media/autoplay0.png"))));
+        autoplayDisabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/autoplay0.png"))));
     }
 }

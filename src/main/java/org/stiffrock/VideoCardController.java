@@ -1,9 +1,12 @@
 package org.stiffrock;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -20,11 +23,15 @@ public class VideoCardController {
     @FXML
     private HBox rootPanel;
     @FXML
+    private ProgressIndicator progressInd;
+    @FXML
     private Label title;
     @FXML
     private Label duration;
     @FXML
     private ImageView thumbnail;
+    @FXML
+    private BorderPane btnDeleteVideoCard;
 
     private String videoUrl;
 
@@ -39,10 +46,18 @@ public class VideoCardController {
     }
 
     public void setVideo(SimpleEntry<String, String[]> videoInfo) {
-        videoUrl = videoInfo.getKey();
-        title.setText(videoInfo.getValue()[0]);
-        String imageUrl = videoInfo.getValue()[1];
+        Platform.runLater(() -> {
+            videoUrl = videoInfo.getKey();
+            title.setText(videoInfo.getValue()[0]);
+            loadThumbnail(videoInfo.getValue()[1]);
+            duration.setText(videoInfo.getValue()[2]);
+            duration.setVisible(true);
+            progressInd.setVisible(false);
+            btnDeleteVideoCard.setVisible(true);
+        });
+    }
 
+    private void loadThumbnail(String imageUrl) {
         try {
             URL url = new URL(imageUrl);
             InputStream inputStream = url.openStream();
@@ -63,8 +78,6 @@ public class VideoCardController {
         } catch (Exception e) {
             System.err.println("Error loading the converted thumbnail. " + e.getMessage());
         }
-
-        duration.setText(videoInfo.getValue()[2]);
     }
 
     @FXML

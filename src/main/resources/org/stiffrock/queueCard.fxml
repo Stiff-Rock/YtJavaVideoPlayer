@@ -7,19 +7,20 @@
 <?import javafx.scene.text.*?>
 
 <HBox id="videoCardPanel" fx:id="rootPanel" maxHeight="100" maxWidth="320" minHeight="80.0" minWidth="320" onMouseClicked="#play" prefHeight="80.0" prefWidth="300.0" spacing="10" stylesheets="@css/style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.stiffrock.VideoCardController">
-    <StackPane id="thumbnail" alignment="BOTTOM_CENTER" layoutX="14.0" layoutY="21.0">
-        <ImageView fx:id="thumbnail" fitHeight="60" fitWidth="98" layoutX="2.0" layoutY="2.0" />
-        <Label id="thumbnailVideoDuration" fx:id="duration" alignment="CENTER" contentDisplay="CENTER" layoutX="2.0" layoutY="43.0" prefHeight="17.0" prefWidth="98.0" text="00:00" textAlignment="CENTER" textFill="WHITE" />
+    <StackPane id="thumbnail" layoutX="14.0" layoutY="21.0">
+        <ImageView fx:id="thumbnail" fitHeight="60" fitWidth="98" />
+        <ProgressIndicator fx:id="progressInd" maxWidth="40" StackPane.alignment="CENTER" />
+        <Label id="thumbnailVideoDuration" fx:id="duration" alignment="CENTER" prefHeight="17.0" prefWidth="98.0" text="00:00" textAlignment="CENTER" textFill="WHITE" visible="false" StackPane.alignment="BOTTOM_CENTER" />
     </StackPane>
     <AnchorPane layoutX="120.0" layoutY="21.0">
-        <Label fx:id="title" alignment="TOP_LEFT" contentDisplay="CENTER" prefHeight="39.0" prefWidth="185.0" text="Video TItle" wrapText="true">
+        <Label fx:id="title" alignment="TOP_LEFT" contentDisplay="CENTER" prefHeight="39.0" prefWidth="185.0" text="Loading video..." wrapText="true">
             <font>
                 <Font size="12.0" />
             </font>
         </Label>
-        <BorderPane id="btnDeleteVideoCard" layoutX="169.0" layoutY="43.0">
+        <BorderPane id="btnDeleteVideoCard" fx:id="btnDeleteVideoCard" layoutX="169.0" layoutY="43.0">
             <center>
-                <ImageView onMouseClicked="#delete">
+                <ImageView onMouseClicked="#delete" visible="false">
                     <Image url="@media/trash.png" />
                 </ImageView>
             </center>

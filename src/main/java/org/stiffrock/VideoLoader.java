@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 
 public class VideoLoader {
     public static String ytdlpPath;
-    private static final Queue<String> videoUrls = new LinkedList<>();
+    private static final Queue<String> videoRequests = new LinkedList<>();
     private static final LinkedList<SimpleEntry<String, String[]>> streamUrlQueue = new LinkedList<>();
     private static Consumer<Boolean> onQueueUpdate;
 
@@ -32,7 +32,7 @@ public class VideoLoader {
         return new Task<>() {
             @Override
             protected Void call() {
-                videoUrls.add(videoUrl);
+                videoRequests.add(videoUrl);
                 return null;
             }
         };
@@ -73,7 +73,7 @@ public class VideoLoader {
 
                     String[] Urls = urlsBuilder.toString().split("\n");
                     System.out.println(Urls.length + " URLs loaded.");
-                    Collections.addAll(videoUrls, Urls);
+                    Collections.addAll(videoRequests, Urls);
                 } catch (IOException | InterruptedException e) {
                     System.err.println("Error getting video Url. " + e.getMessage());
                 }
@@ -88,12 +88,12 @@ public class VideoLoader {
         return new Task<>() {
             @Override
             protected Void call() {
-                if (videoUrls.isEmpty()) {
+                if (videoRequests.isEmpty()) {
                     System.err.println("Error: Url queue is empty");
                     return null;
                 }
 
-                String url = videoUrls.poll();
+                String url = videoRequests.poll();
 
                 boolean correctStreamUrl = false;
 
@@ -146,13 +146,6 @@ public class VideoLoader {
                     }
                 } while (!correctStreamUrl);
 
-                if (!videoUrls.isEmpty()) {
-                    new Thread(retrieveStreamUrl()).start();
-                } else {
-                    System.out.println("--------------------");
-                    System.out.println("Finished loading video/s");
-                    System.out.println("--------------------");
-                }
                 return null;
             }
         };
@@ -183,7 +176,7 @@ public class VideoLoader {
             String duration = reader.readLine();
             reader.close();
 
-            System.out.println("Playing: " + title + " (" + duration + ")");
+            System.out.println("Loaded: " + title + " (" + duration + ")");
 
             return new String[]{title, thumbnailUrl, duration};
         } catch (IOException | InterruptedException e) {
@@ -232,5 +225,9 @@ public class VideoLoader {
 
     public static int getQueueSize() {
         return streamUrlQueue.size();
+    }
+
+    public static int getVideoRequestsSize() {
+        return videoRequests.size();
     }
 }
