@@ -18,16 +18,12 @@ import javafx.util.Duration;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 public class AppController {
 
-    //TODO Animacion de mostrar/ocultar slider volumen
-    //TODO Loading indicator in video cards
-    //TODO FadeOut
-    //TODO Autoplay next video change
-    //TODO make it so you cant use btnNext while card is loading
+    //TODO make it so you cant use btnNext while card is loading (this is behaving weird AF)
     //TODO using btnNext too fast breaks it
+    //TODO change btnToggleFadeOut button icon
 
     /* TODO:
      * Error loading current media: [com.sun.media.jfxmediaimpl.platform.gstreamer.GSTMediaPlayer@4759d1aa] ERROR_MEDIA_INVALID: ERROR_MEDIA_INVALID
@@ -60,6 +56,8 @@ public class AppController {
     @FXML
     private Button btnAutoplay;
     @FXML
+    private Button btnToggleFadeOut;
+    @FXML
     private Button btnToggleQueue;
     @FXML
     private StackPane mediaViewPanel;
@@ -78,7 +76,7 @@ public class AppController {
     @FXML
     private TitledPane queueTitledPanel;
 
-    private static double masterVolume = 1.0;
+    private static double masterVolume;
     private MediaPlayer mediaPlayer;
     private VideoCardController currentVideoCardController;
 
@@ -86,10 +84,13 @@ public class AppController {
     private boolean isLoopEnabled;
     private boolean isAutoplayEnabled;
     private boolean isQueueVisible;
+    private boolean isFadeOutActive;
 
     @FXML
     public void initialize() {
         initializeIcons();
+
+        masterVolume = volumeSlider.getValue();
 
         VideoLoader.setOnQueueUpdateListener(newAddedToQueue -> {
             if (newAddedToQueue && mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
@@ -103,7 +104,7 @@ public class AppController {
         });
 
         volumeSlider.valueProperty().addListener((obs, oldValue, newValue) -> {
-            masterVolume = newValue.doubleValue() / 100;
+            masterVolume = newValue.doubleValue();
             if (mediaPlayer != null) mediaPlayer.setVolume(masterVolume);
         });
     }
@@ -211,18 +212,19 @@ public class AppController {
         if (VideoLoader.isQueueEmpty()) btnNext.setDisable(true);
     }
 
-    @FXML
     private void playBtn() {
         mediaPlayer.play();
 
         toggleBtnPlayPause(pause);
     }
 
-    @FXML
     private void pauseBtn() {
-        mediaPlayer.pause();
-
-        toggleBtnPlayPause(play);
+        if (isFadeOutActive) {
+            fadeOut();
+        } else {
+            mediaPlayer.pause();
+            toggleBtnPlayPause(play);
+        }
     }
 
     @FXML
@@ -256,7 +258,14 @@ public class AppController {
             lblVideoDuration.setText(formatTime(mediaPlayer.getTotalDuration().toSeconds()));
         });
 
-        mediaPlayer.setOnEndOfMedia(() -> toggleBtnPlayPause(play));
+        mediaPlayer.setOnEndOfMedia(() -> {
+            if (isAutoplayEnabled) {
+                nextBtn();
+            } else {
+                toggleBtnPlayPause(play);
+            }
+        });
+
         mediaPlayer.setCycleCount(isLoopEnabled ? MediaPlayer.INDEFINITE : 1);
         mediaPlayer.setAutoPlay(isAutoplayEnabled);
         mediaPlayer.setVolume(masterVolume);
@@ -348,7 +357,7 @@ public class AppController {
     }
 
     private void toggleBtnPlayPause(ImageView image) {
-        btnPlayPause.setGraphic(image);
+        Platform.runLater(() -> btnPlayPause.setGraphic(image));
     }
 
     private boolean isNotPlaying() {
@@ -367,5 +376,52 @@ public class AppController {
         autoplayEnabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/autoplay1.png"))));
 
         autoplayDisabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/autoplay0.png"))));
+    }
+
+    @FXML
+    private void toggleFadeOut() {
+        isFadeOutActive = !isFadeOutActive;
+        btnToggleFadeOut.setText("Fade out: " + isFadeOutActive);
+    }
+
+    private void fadeOut() {
+        Task<Void> fadeTask = new Task<>() {
+            @Override
+            protected Void call() {
+                double i = 0.005;
+
+                while (masterVolume > 0) {
+                    btnPlayPause.setDisable(true);
+                    btnNext.setDisable(true);
+
+                    masterVolume -= i;
+                    if (masterVolume < 0) {
+                        masterVolume = 0;
+                    }
+
+                    Platform.runLater(() -> volumeSlider.setValue(masterVolume));
+
+                    try {
+                        Thread.sleep(25);
+                    } catch (InterruptedException e) {
+                        if (isCancelled()) {
+                            break;
+                        }
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                mediaPlayer.pause();
+                toggleBtnPlayPause(play);
+                btnPlayPause.setDisable(false);
+                btnNext.setDisable(false);
+
+                return null;
+            }
+        };
+
+        Thread thread = new Thread(fadeTask);
+        thread.setDaemon(true);
+        thread.start();
     }
 }
