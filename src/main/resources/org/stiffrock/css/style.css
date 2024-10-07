@@ -39,7 +39,3 @@
 #btnDeleteVideoCard {
     -fx-padding: 2px;
 }
-
-#btnDeleteVideoCard:hover {
-    -fx-background-color: rgb(168, 168, 168);
-}

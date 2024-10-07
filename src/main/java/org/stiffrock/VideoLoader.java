@@ -193,28 +193,16 @@ public class VideoLoader {
         return streamUrlQueue.get(index);
     }
 
-    public static void removeVideoFromQueue(String key) {
-        Iterator<SimpleEntry<String, String[]>> iterator = streamUrlQueue.iterator();
-        while (iterator.hasNext()) {
-            SimpleEntry<String, String[]> entry = iterator.next();
-            if (entry.getKey().equals(key)) {
-                notifyQueueUpdate(false);
-                iterator.remove();
-                break;
-            }
-        }
+    public static void removeVideoFromQueue(int queueIndex) {
+        streamUrlQueue.remove(queueIndex);
     }
 
-    public static SimpleEntry<String, String[]> pollVideoFromQueueByUrl(String key) {
-        Iterator<SimpleEntry<String, String[]>> iterator = streamUrlQueue.iterator();
-        while (iterator.hasNext()) {
-            SimpleEntry<String, String[]> entry = iterator.next();
-            if (entry.getKey().equals(key)) {
-                iterator.remove();
-                return entry;
-            }
-        }
-        return null;
+    public static SimpleEntry<String, String[]> pollVideoByIndex(int queueIndex) {
+        return streamUrlQueue.remove(queueIndex);
+    }
+
+    public static void changeVideoPositionInQueue(int queueIndex, int desiredIndex) {
+        streamUrlQueue.add(desiredIndex, streamUrlQueue.remove(queueIndex));
     }
 
     public static boolean isQueueEmpty() {
@@ -228,4 +216,5 @@ public class VideoLoader {
     public static int getVideoRequestsSize() {
         return videoRequests.size();
     }
+
 }

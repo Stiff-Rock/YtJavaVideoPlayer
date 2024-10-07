@@ -27,13 +27,13 @@ public class AppMain extends Application {
     private void verifyOsCompatibility() {
         String os = System.getProperty("os.name").toLowerCase();
 
-        String ytdlpPath;
+        String ytdlpPath = "";
         if (os.contains("win")) {
             ytdlpPath = "bin/yt-dlp.exe";
         } else if (os.contains("nix") || os.contains("nux") || os.contains("mac")) {
             ytdlpPath = "bin/yt-dlp_linux";
         } else {
-            throw new UnsupportedOperationException("Unsupported operating system: " + os);
+            System.exit(0);
         }
 
         VideoLoader.ytdlpPath = ytdlpPath;

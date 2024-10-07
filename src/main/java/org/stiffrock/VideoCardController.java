@@ -6,7 +6,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -31,11 +30,11 @@ public class VideoCardController {
     @FXML
     private ImageView thumbnail;
     @FXML
-    private BorderPane btnDeleteVideoCard;
-
-    private String videoUrl;
+    private HBox buttonArea;
 
     private VBox parent;
+
+    private int queueIndex;
 
     public void setAppController(AppController appController) {
         this.appController = appController;
@@ -47,14 +46,16 @@ public class VideoCardController {
 
     public void setVideo(SimpleEntry<String, String[]> videoInfo) {
         Platform.runLater(() -> {
-            videoUrl = videoInfo.getKey();
             title.setText(videoInfo.getValue()[0]);
             loadThumbnail(videoInfo.getValue()[1]);
             duration.setText(videoInfo.getValue()[2]);
+
             duration.setVisible(true);
             progressInd.setVisible(false);
-            btnDeleteVideoCard.setVisible(true);
+            buttonArea.setVisible(true);
         });
+
+        queueIndex = parent.getChildren().indexOf(rootPanel);
     }
 
     private void loadThumbnail(String imageUrl) {
@@ -82,13 +83,45 @@ public class VideoCardController {
 
     @FXML
     private void play() {
-        appController.playSelectedVideoCard(videoUrl);
+        appController.playSelectedVideoCard(queueIndex);
         delete();
     }
 
     @FXML
     private void delete() {
         parent.getChildren().remove(rootPanel);
-        VideoLoader.removeVideoFromQueue(videoUrl);
+        VideoLoader.removeVideoFromQueue(queueIndex);
     }
+
+    @FXML
+    private void moveCardDown() {
+        moveCard(queueIndex + 1);
+    }
+
+    @FXML
+    private void moveCardUp() {
+        moveCard(queueIndex - 1);
+    }
+
+    private void moveCard(int index) {
+        if (index >= VideoLoader.getQueueSize()) {
+            index = VideoLoader.getQueueSize() - 1;
+        } else if (index < 0) {
+            return;
+        }
+
+        if (queueIndex >= 0 && queueIndex < VideoLoader.getQueueSize()) {
+
+            VideoLoader.changeVideoPositionInQueue(queueIndex, index);
+
+            int finalIndex = index;
+            Platform.runLater(() -> {
+                parent.getChildren().remove(rootPanel);
+                parent.getChildren().add(finalIndex, rootPanel);
+            });
+
+            queueIndex = index;
+        }
+    }
+
 }

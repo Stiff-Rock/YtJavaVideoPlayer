@@ -26,10 +26,8 @@ import java.util.Objects;
 public class AppController {
 
     //TODO Move queue cards and change order
-    //TODO change btnToggleFadeOut button icon
-    //TODO handle errors
-
-    /* TODO:
+    //TODO Handle errors properly
+    /*TODO:
      * Error loading current media: [com.sun.media.jfxmediaimpl.platform.gstreamer.GSTMediaPlayer@4759d1aa] ERROR_MEDIA_INVALID: ERROR_MEDIA_INVALID
      * Troubleshooting info:
      *  - Media: javafx.scene.media.Media@1d562ce4
@@ -187,8 +185,8 @@ public class AppController {
         });
     }
 
-    public void playSelectedVideoCard(String videoUrl) {
-        changeVideo(VideoLoader.pollVideoFromQueueByUrl(videoUrl));
+    public void playSelectedVideoCard(int queueIndex) {
+        changeVideo(VideoLoader.pollVideoByIndex(queueIndex));
     }
 
     private void pollVideoCardQueue() {
@@ -389,7 +387,8 @@ public class AppController {
     @FXML
     private void toggleFadeOut() {
         isFadeOutActive = !isFadeOutActive;
-        btnToggleFadeOut.setText("Fade out: " + isFadeOutActive);
+        String txt = isFadeOutActive ? "Enabled" : "Disabled";
+        btnToggleFadeOut.setText("Fade out: " + txt);
     }
 
     private void fadeOut() {
