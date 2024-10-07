@@ -5,6 +5,9 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -15,21 +18,22 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.util.Duration;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Objects;
 
 public class AppController {
 
-    //TODO make it so you cant use btnNext while card is loading (this is behaving weird AF)
-    //TODO using btnNext too fast breaks it
+    //TODO Move queue cards and change order
     //TODO change btnToggleFadeOut button icon
+    //TODO handle errors
 
     /* TODO:
      * Error loading current media: [com.sun.media.jfxmediaimpl.platform.gstreamer.GSTMediaPlayer@4759d1aa] ERROR_MEDIA_INVALID: ERROR_MEDIA_INVALID
      * Troubleshooting info:
      *  - Media: javafx.scene.media.Media@1d562ce4
-     *  - Stream Url:
+     *  - Stream Url: ...
      */
 
     private ImageView play;
@@ -133,7 +137,11 @@ public class AppController {
     private void loadUrlsTask(Task<Void> startUrlLoading) {
         startUrlLoading.setOnSucceeded(event -> loadNextStream());
 
-        if (mediaPlayer == null) progressInd.setVisible(true);
+        if (mediaPlayer == null) {
+            progressInd.setVisible(true);
+        } else {
+            addVideoCardToQueue();
+        }
 
         new Thread(startUrlLoading).start();
     }
@@ -149,14 +157,14 @@ public class AppController {
             if (VideoLoader.getVideoRequestsSize() != 0) {
                 addVideoCardToQueue();
                 loadNextStream();
-            }
-
-            if (VideoLoader.getVideoRequestsSize() == 0) {
+            } else {
+                Toolkit.getDefaultToolkit().beep();
                 System.out.println("--------------------");
                 System.out.println("Finished loading video/s");
                 System.out.println("--------------------");
             }
         });
+
 
         new Thread(streamLoadingTask).start();
     }
@@ -184,7 +192,7 @@ public class AppController {
     }
 
     private void pollVideoCardQueue() {
-        queueDisplayPanel.getChildren().remove(0);
+        Platform.runLater(() -> queueDisplayPanel.getChildren().remove(0));
     }
 
     @FXML

@@ -5,11 +5,8 @@ import javafx.concurrent.Task;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.function.Consumer;
 
 public class VideoLoader {
@@ -74,6 +71,7 @@ public class VideoLoader {
                     String[] Urls = urlsBuilder.toString().split("\n");
                     System.out.println(Urls.length + " URLs loaded.");
                     Collections.addAll(videoRequests, Urls);
+
                 } catch (IOException | InterruptedException e) {
                     System.err.println("Error getting video Url. " + e.getMessage());
                 }
