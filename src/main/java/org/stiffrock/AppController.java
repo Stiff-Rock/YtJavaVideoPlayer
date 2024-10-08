@@ -21,11 +21,11 @@ import javafx.util.Duration;
 import java.awt.*;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.LinkedList;
 import java.util.Objects;
 
 public class AppController {
 
-    //TODO Move queue cards and change order
     //TODO Handle errors properly
     /*TODO:
      * Error loading current media: [com.sun.media.jfxmediaimpl.platform.gstreamer.GSTMediaPlayer@4759d1aa] ERROR_MEDIA_INVALID: ERROR_MEDIA_INVALID
@@ -80,6 +80,8 @@ public class AppController {
 
     private static double masterVolume;
     private MediaPlayer mediaPlayer;
+
+    private final LinkedList<VideoCardController> videoCardControllers = new LinkedList<>();
     private VideoCardController currentVideoCardController;
 
     private boolean isProgressBarDragged;
@@ -174,11 +176,13 @@ public class AppController {
                 HBox videoCard = loader.load();
 
                 currentVideoCardController = loader.getController();
+                videoCardControllers.add(currentVideoCardController);
 
                 currentVideoCardController.setAppController(this);
                 currentVideoCardController.setParent(queueDisplayPanel);
 
                 queueDisplayPanel.getChildren().add(videoCard);
+
             } catch (IOException e) {
                 System.err.println("Error loading video card: " + e.getMessage());
             }
@@ -187,10 +191,14 @@ public class AppController {
 
     public void playSelectedVideoCard(int queueIndex) {
         changeVideo(VideoLoader.pollVideoByIndex(queueIndex));
+        videoCardControllers.remove(queueIndex);
+        updateVideocardQueueIndexes();
     }
 
     private void pollVideoCardQueue() {
         Platform.runLater(() -> queueDisplayPanel.getChildren().remove(0));
+        videoCardControllers.remove();
+        updateVideocardQueueIndexes();
     }
 
     @FXML
@@ -370,20 +378,6 @@ public class AppController {
         return mediaPlayer.getStatus() == MediaPlayer.Status.PAUSED || mediaPlayer.getStatus() == MediaPlayer.Status.READY || mediaPlayer.getStatus() == MediaPlayer.Status.STOPPED;
     }
 
-    private void initializeIcons() {
-        play = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/play.png"))));
-
-        pause = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/pause.png"))));
-
-        loopDisabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/loop0.png"))));
-
-        loopEnabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/loop1.png"))));
-
-        autoplayEnabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/autoplay1.png"))));
-
-        autoplayDisabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/autoplay0.png"))));
-    }
-
     @FXML
     private void toggleFadeOut() {
         isFadeOutActive = !isFadeOutActive;
@@ -430,5 +424,25 @@ public class AppController {
         Thread thread = new Thread(fadeTask);
         thread.setDaemon(true);
         thread.start();
+    }
+
+    public void updateVideocardQueueIndexes() {
+        for (VideoCardController videoCard : videoCardControllers) {
+            videoCard.updateQueueIndex();
+        }
+    }
+
+    private void initializeIcons() {
+        play = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/play.png"))));
+
+        pause = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/pause.png"))));
+
+        loopDisabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/loop0.png"))));
+
+        loopEnabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/loop1.png"))));
+
+        autoplayEnabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/autoplay1.png"))));
+
+        autoplayDisabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/autoplay0.png"))));
     }
 }

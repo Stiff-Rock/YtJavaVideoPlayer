@@ -110,18 +110,20 @@ public class VideoCardController {
             return;
         }
 
-        if (queueIndex >= 0 && queueIndex < VideoLoader.getQueueSize()) {
+        VideoLoader.changeVideoPositionInQueue(queueIndex, index);
 
-            VideoLoader.changeVideoPositionInQueue(queueIndex, index);
+        int finalIndex = index;
+        Platform.runLater(() -> {
+            parent.getChildren().remove(rootPanel);
+            parent.getChildren().add(finalIndex, rootPanel);
+            appController.updateVideocardQueueIndexes();
+        });
 
-            int finalIndex = index;
-            Platform.runLater(() -> {
-                parent.getChildren().remove(rootPanel);
-                parent.getChildren().add(finalIndex, rootPanel);
-            });
-
-            queueIndex = index;
-        }
+        queueIndex = index;
     }
 
+    public void updateQueueIndex() {
+        queueIndex =  parent.getChildren().indexOf(rootPanel);
+        System.out.println("Title: " + title.getText() + ": " + queueIndex);
+    }
 }

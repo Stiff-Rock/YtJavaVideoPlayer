@@ -203,6 +203,13 @@ public class VideoLoader {
 
     public static void changeVideoPositionInQueue(int queueIndex, int desiredIndex) {
         streamUrlQueue.add(desiredIndex, streamUrlQueue.remove(queueIndex));
+
+        for (SimpleEntry<String, String[]> entry : streamUrlQueue) {
+            String[] value = entry.getValue();
+
+            System.out.println("Value: " + Arrays.toString(value));
+        }
+        System.out.println();
     }
 
     public static boolean isQueueEmpty() {

@@ -6,40 +6,45 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<HBox id="videoCardPanel" fx:id="rootPanel" maxHeight="100" maxWidth="320" minHeight="80.0" minWidth="320" onMouseClicked="#play" prefHeight="80.0" prefWidth="300.0" spacing="10" stylesheets="@css/style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.stiffrock.VideoCardController">
+<HBox id="videoCardPanel" fx:id="rootPanel" maxHeight="100" maxWidth="320" minHeight="80.0" minWidth="320"
+      onMouseClicked="#play" prefHeight="80.0" prefWidth="300.0" spacing="10" stylesheets="@css/style.css"
+      xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.stiffrock.VideoCardController">
     <StackPane id="thumbnail" layoutX="14.0" layoutY="21.0">
-        <ImageView fx:id="thumbnail" fitHeight="60" fitWidth="98" />
-        <ProgressIndicator fx:id="progressInd" maxWidth="40" StackPane.alignment="CENTER" />
-        <Label id="thumbnailVideoDuration" fx:id="duration" alignment="CENTER" prefHeight="17.0" prefWidth="98.0" text="00:00" textAlignment="CENTER" textFill="WHITE" visible="false" StackPane.alignment="BOTTOM_CENTER" />
+        <ImageView fx:id="thumbnail" fitHeight="60" fitWidth="98"/>
+        <ProgressIndicator fx:id="progressInd" maxWidth="40" StackPane.alignment="CENTER"/>
+        <Label id="thumbnailVideoDuration" fx:id="duration" alignment="CENTER" prefHeight="17.0" prefWidth="98.0"
+               text="00:00" textAlignment="CENTER" textFill="WHITE" visible="false"
+               StackPane.alignment="BOTTOM_CENTER"/>
     </StackPane>
     <AnchorPane layoutX="120.0" layoutY="21.0">
-        <Label fx:id="title" alignment="TOP_LEFT" contentDisplay="CENTER" prefHeight="39.0" prefWidth="185.0" text="Loading video..." wrapText="true">
-            <font>
-                <Font size="12.0" />
-            </font>
+        <Label fx:id="title" alignment="TOP_LEFT" contentDisplay="CENTER" prefHeight="39.0" prefWidth="185.0"
+               text="Loading video..." wrapText="true">
+                <Font size="12.0"/>
         </Label>
-        <HBox visible="false" fx:id="buttonArea" alignment="CENTER_RIGHT" layoutX="56.0" layoutY="43.0" prefHeight="29.0" prefWidth="133.0">
-         <HBox alignment="CENTER" prefHeight="25.0" prefWidth="80.0" spacing="5">
-            <children>
-               <Button mnemonicParsing="false" text="▼" onAction="#moveCardDown">
-                  <font>
-                     <Font size="8.0" />
-                  </font></Button>
-               <Button mnemonicParsing="false" text="▲" onAction="#moveCardUp">
-                  <font>
-                     <Font size="8.0" />
-                  </font></Button>
-            </children>
-         </HBox>
-                <ImageView onMouseClicked="#delete">
-                    <Image url="@media/trash.png" />
-                    <cursor>
-                        <Cursor fx:constant="HAND" />
-                    </cursor>
-                </ImageView>
+        <HBox visible="false" fx:id="buttonArea" alignment="CENTER_RIGHT" layoutX="56.0" layoutY="43.0"
+              prefHeight="29.0" prefWidth="133.0">
+            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="80.0" spacing="5">
+                    <Button mnemonicParsing="false" text="▲" onAction="#moveCardUp">
+                        <font>
+                            <Font size="8.0"/>
+                        </font>
+                    </Button>
+                    <Button mnemonicParsing="false" text="▼" onAction="#moveCardDown">
+                        <font>
+                            <Font size="8.0"/>
+                        </font>
+                    </Button>
+            </HBox>
+            <ImageView onMouseClicked="#delete">
+                <Image url="@media/trash.png"/>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </ImageView>
         </HBox>
     </AnchorPane>
     <cursor>
-        <Cursor fx:constant="HAND" />
+        <Cursor fx:constant="HAND"/>
     </cursor>
 </HBox>
