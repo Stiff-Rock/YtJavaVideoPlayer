@@ -26,6 +26,8 @@ import java.util.Objects;
 
 public class AppController {
 
+    //TODO JUST FUCKING USE FFMPEG
+    //TODO CARD REORDERING IS BUGGY
     //TODO Handle errors properly
     /*TODO:
      * Error loading current media: [com.sun.media.jfxmediaimpl.platform.gstreamer.GSTMediaPlayer@4759d1aa] ERROR_MEDIA_INVALID: ERROR_MEDIA_INVALID
@@ -403,6 +405,7 @@ public class AppController {
                     Platform.runLater(() -> volumeSlider.setValue(masterVolume));
 
                     try {
+                        //noinspection BusyWait
                         Thread.sleep(25);
                     } catch (InterruptedException e) {
                         if (isCancelled()) {
