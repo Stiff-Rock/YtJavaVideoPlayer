@@ -26,7 +26,7 @@
             </HBox>
         </VBox>
         <HBox alignment="CENTER" layoutX="86.0" layoutY="471.0" maxWidth="640" prefHeight="34.0" spacing="10">
-            <TextField fx:id="tfUrl" layoutX="125.0" layoutY="95.0" prefHeight="25.0" prefWidth="606" promptText="Youtube Url..." text="https://www.youtube.com/watch?v=hCkXqbqmv6Q&amp;list=PL3NkqQUxnB3DIjKVkQInPUY5GOzcIWi1_">
+            <TextField fx:id="tfUrl" layoutX="125.0" layoutY="95.0" prefHeight="25.0" prefWidth="606" promptText="Youtube Url..." text="https://youtube.com/playlist?list=PL3NkqQUxnB3C_h3xF5pSgu39dkSQC5IUt&amp;si=WEXI_wbOeP3tAJx2">
                 <font>
                     <Font size="9.0" />
                 </font>

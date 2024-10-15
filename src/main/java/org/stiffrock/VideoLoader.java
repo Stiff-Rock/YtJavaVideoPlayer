@@ -1,18 +1,26 @@
 package org.stiffrock;
 
 import javafx.concurrent.Task;
+import javafx.scene.media.Media;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.function.Consumer;
 
 public class VideoLoader {
     public static String ytdlpPath;
+    public static String ffmpegPath;
     private static final Queue<String> videoRequests = new LinkedList<>();
-    private static final LinkedList<SimpleEntry<String, String[]>> streamUrlQueue = new LinkedList<>();
+    private static final LinkedList<SimpleEntry<Media, String[]>> streamUrlQueue = new LinkedList<>();
     private static Consumer<Boolean> onQueueUpdate;
 
     public static void setOnQueueUpdateListener(Consumer<Boolean> listener) {
@@ -82,7 +90,7 @@ public class VideoLoader {
     }
 
     // Goes through the videoUrls list to get every stream url from the video Urls
-    public static Task<Void> retrieveStreamUrl() {
+    public static Task<Void> getMedia() {
         return new Task<>() {
             @Override
             protected Void call() {
@@ -93,60 +101,58 @@ public class VideoLoader {
 
                 String url = videoRequests.poll();
 
-                boolean correctStreamUrl = false;
-
                 System.out.println("--------------------");
-                System.out.println("Loading Stream Url...");
 
-                do {
-                    ProcessBuilder processBuilder = new ProcessBuilder(ytdlpPath, "-f b", "-g", url);
+                Media video = ffmpegConvert(urlProcess(url, "bestvideo"), urlProcess(url, "bestaudio"));
+                String[] videoInfo = getVideoInfo(url);
 
-                    StringBuilder videoUrlBuilder = new StringBuilder();
-                    StringBuilder errorOutput = new StringBuilder();
+                streamUrlQueue.add(new SimpleEntry<>(video, videoInfo));
+                notifyQueueUpdate(true);
 
-                    try {
-                        Process process = processBuilder.start();
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            videoUrlBuilder.append(line).append("\n");
-                        }
-
-                        BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-                        while ((line = errorReader.readLine()) != null) {
-                            errorOutput.append(line).append("\n");
-                        }
-
-                        reader.close();
-                        errorReader.close();
-
-                        int exitCode = process.waitFor();
-
-                        if (exitCode == 1) {
-                            throw new IOException("Retrying request...");
-                        } else if (exitCode != 0) {
-                            throw new IOException("Error retrieving stream Url - Exit code: " + exitCode + "\n" + errorOutput.toString().trim());
-                        } else {
-                            correctStreamUrl = true;
-                        }
-
-                        String streamUrl = videoUrlBuilder.toString().trim();
-
-                        String[] videoInfo = getVideoInfo(url);
-                        streamUrlQueue.add(new SimpleEntry<>(streamUrl, videoInfo));
-
-                        notifyQueueUpdate(true);
-
-                        System.out.println("Current queue length: " + streamUrlQueue.size());
-                    } catch (IOException | InterruptedException e) {
-                        System.err.println(e.getMessage());
-                    }
-                } while (!correctStreamUrl);
-
+                System.out.println("Current queue length: " + streamUrlQueue.size());
                 return null;
             }
         };
+    }
+
+    private static String urlProcess(String url, String format) {
+        System.out.print("Loading Stream Url... ");
+        ProcessBuilder processBuilder = new ProcessBuilder(ytdlpPath, "-f", format, "-g", url);
+
+        StringBuilder videoUrlBuilder = new StringBuilder();
+        StringBuilder errorOutput = new StringBuilder();
+
+        String streamUrl = "";
+        try {
+            Process process = processBuilder.start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                videoUrlBuilder.append(line).append("\n");
+            }
+
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            while ((line = errorReader.readLine()) != null) {
+                errorOutput.append(line).append("\n");
+            }
+
+            reader.close();
+            errorReader.close();
+
+            int exitCode = process.waitFor();
+
+            if (exitCode != 0) {
+                throw new IOException("Error retrieving stream Url - Exit code: " + exitCode + "\n" + errorOutput.toString().trim());
+            }
+
+            streamUrl = videoUrlBuilder.toString().trim();
+
+        } catch (IOException | InterruptedException e) {
+            System.err.println(e.getMessage());
+        }
+        System.out.println("Done");
+        return streamUrl;
     }
 
     public static String[] getVideoInfo(String videoUrl) {
@@ -184,12 +190,56 @@ public class VideoLoader {
         return null;
     }
 
-    public static SimpleEntry<String, String[]> pollStreamUrl() {
+    private static Media ffmpegConvert(String videoUrl, String audioUrl) {
+        String outputVideo = "tempVideoFiles/video_" + System.currentTimeMillis() + ".mp4";
+        Media video;
+
+        String[] command = {ffmpegPath, "-i", videoUrl, "-i", audioUrl, "-c:v", "copy", "-c:a", "aac", "-shortest", outputVideo};
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.redirectErrorStream(true);
+
+        StringBuilder logOutput = new StringBuilder();
+
+        try {
+            Process process = processBuilder.start();
+            System.out.print("Executing ffmpeg conversion... ");
+
+            try (BufferedReader inputReader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = inputReader.readLine()) != null) {
+                    logOutput.append(line).append("\n");
+                }
+            }
+
+            int exitCode = process.waitFor();
+
+            if (exitCode != 0) {
+                System.err.println("FFmpeg process exited with code: " + exitCode);
+                System.err.println(logOutput);
+                throw new RuntimeException("Error in FFMpeg process: " + logOutput);
+            }
+
+            Path videoPath = Paths.get(outputVideo);
+            if (Files.exists(videoPath)) {
+                video = new Media(videoPath.toUri().toString());
+                System.out.println("Done");
+            } else {
+                throw new RuntimeException("Output video file was not created: " + outputVideo);
+            }
+
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException("Error in FFMpeg: " + e.getMessage(), e);
+        }
+
+        return video;
+    }
+
+    public static SimpleEntry<Media, String[]> pollMedia() {
         notifyQueueUpdate(false);
         return streamUrlQueue.poll();
     }
 
-    public static SimpleEntry<String, String[]> peekVideoFromQueue(int index) {
+    public static SimpleEntry<Media, String[]> peekVideoFromQueue(int index) {
         return streamUrlQueue.get(index);
     }
 
@@ -197,14 +247,14 @@ public class VideoLoader {
         streamUrlQueue.remove(queueIndex);
     }
 
-    public static SimpleEntry<String, String[]> pollVideoByIndex(int queueIndex) {
+    public static SimpleEntry<Media, String[]> pollVideoByIndex(int queueIndex) {
         return streamUrlQueue.remove(queueIndex);
     }
 
     public static void changeVideoPositionInQueue(int queueIndex, int desiredIndex) {
         streamUrlQueue.add(desiredIndex, streamUrlQueue.remove(queueIndex));
 
-        for (SimpleEntry<String, String[]> entry : streamUrlQueue) {
+        for (SimpleEntry<Media, String[]> entry : streamUrlQueue) {
             String[] value = entry.getValue();
 
             System.out.println("Value: " + Arrays.toString(value));

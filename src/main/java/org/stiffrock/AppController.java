@@ -4,10 +4,10 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -20,13 +20,19 @@ import javafx.util.Duration;
 
 import java.awt.*;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.LinkedList;
 import java.util.Objects;
 
 public class AppController {
 
-    //TODO JUST FUCKING USE FFMPEG
+    //TODO Refactor function names
+    //TODO DELETE FILES WHEN EXITED
+    //TODO DELETE FILES WHEN USED
     //TODO CARD REORDERING IS BUGGY
     //TODO Handle errors properly
     /*TODO:
@@ -137,7 +143,7 @@ public class AppController {
     }
 
     private void loadUrlsTask(Task<Void> startUrlLoading) {
-        startUrlLoading.setOnSucceeded(event -> loadNextStream());
+        startUrlLoading.setOnSucceeded(event -> loadNextMedia());
 
         if (mediaPlayer == null) {
             progressInd.setVisible(true);
@@ -148,17 +154,17 @@ public class AppController {
         new Thread(startUrlLoading).start();
     }
 
-    private void loadNextStream() {
-        Task<Void> streamLoadingTask = VideoLoader.retrieveStreamUrl();
+    private void loadNextMedia() {
+        Task<Void> mediaLoadingTask = VideoLoader.getMedia();
 
-        streamLoadingTask.setOnSucceeded(streamEvent -> {
+        mediaLoadingTask.setOnSucceeded(streamEvent -> {
             if (mediaPlayer == null) {
-                displayVideo(VideoLoader.pollStreamUrl());
+                displayVideo(VideoLoader.pollMedia());
             }
 
             if (VideoLoader.getVideoRequestsSize() != 0) {
                 addVideoCardToQueue();
-                loadNextStream();
+                loadNextMedia();
             } else {
                 Toolkit.getDefaultToolkit().beep();
                 System.out.println("--------------------");
@@ -168,7 +174,7 @@ public class AppController {
         });
 
 
-        new Thread(streamLoadingTask).start();
+        new Thread(mediaLoadingTask).start();
     }
 
     private void addVideoCardToQueue() {
@@ -215,12 +221,12 @@ public class AppController {
     @FXML
     private void nextBtn() {
         if (mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
-            changeVideo(VideoLoader.pollStreamUrl());
+            changeVideo(VideoLoader.pollMedia());
             pollVideoCardQueue();
         }
     }
 
-    private void changeVideo(SimpleEntry<String, String[]> videoEntry) {
+    private void changeVideo(SimpleEntry<Media, String[]> videoEntry) {
         mediaPlayer.stop();
         progressBar.setValue(0);
         toggleBtnPlayPause(play);
@@ -260,12 +266,14 @@ public class AppController {
         }
     }
 
-    private void displayVideo(SimpleEntry<String, String[]> video) {
+    private void displayVideo(SimpleEntry<Media, String[]> video) {
+        deletePrevTempVideo();
+
         lblVideoTitle.setText(video.getValue()[0]);
 
         progressInd.setVisible(true);
 
-        Media media = new Media(video.getKey());
+        Media media = video.getKey();
         mediaPlayer = new MediaPlayer(media);
 
         mediaPlayer.setOnReady(() -> {
@@ -301,6 +309,25 @@ public class AppController {
             System.err.println(" - Media: " + media);
             System.err.println(" - Stream Url: " + video.getKey());
         });
+    }
+
+    private void deletePrevTempVideo() {
+        if (mediaPlayer != null && mediaPlayer.getMedia() != null) {
+            URI mediaUri = URI.create(mediaPlayer.getMedia().getSource());
+            Path tempVideosPath = Paths.get(mediaUri);
+            mediaPlayer.dispose();
+
+            if (Files.exists(tempVideosPath)) {
+                try {
+                    Files.delete(tempVideosPath);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println("Video file deleted successfully");
+            } else {
+                System.out.println("Video file does not exist");
+            }
+        }
     }
 
     private void initializeProgressBarListeners() {

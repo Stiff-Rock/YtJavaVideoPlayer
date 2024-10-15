@@ -8,6 +8,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.Media;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -44,7 +45,7 @@ public class VideoCardController {
         this.parent = parent;
     }
 
-    public void setVideo(SimpleEntry<String, String[]> videoInfo) {
+    public void setVideo(SimpleEntry<Media, String[]> videoInfo) {
         Platform.runLater(() -> {
             title.setText(videoInfo.getValue()[0]);
             loadThumbnail(videoInfo.getValue()[1]);
