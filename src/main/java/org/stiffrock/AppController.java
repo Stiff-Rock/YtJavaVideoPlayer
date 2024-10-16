@@ -26,9 +26,9 @@ import java.util.Objects;
 
 public class AppController {
 
-    //TODO JUST FUCKING USE FFMPEG
-    //TODO CARD REORDERING IS BUGGY
+    //TODO Card reordering is buggy
     //TODO Handle errors properly
+    //TODO Make dark theme
 
     private ImageView play;
     private ImageView pause;
@@ -271,6 +271,7 @@ public class AppController {
         mediaPlayer.setOnEndOfMedia(() -> {
             if (isAutoplayEnabled) {
                 nextBtn();
+                toggleBtnPlayPause(pause);
             } else {
                 toggleBtnPlayPause(play);
             }
@@ -427,6 +428,7 @@ public class AppController {
         for (VideoCardController videoCard : videoCardControllers) {
             videoCard.updateQueueIndex();
         }
+        System.out.println();
     }
 
     private void initializeIcons() {
