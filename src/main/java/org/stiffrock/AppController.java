@@ -29,12 +29,6 @@ public class AppController {
     //TODO JUST FUCKING USE FFMPEG
     //TODO CARD REORDERING IS BUGGY
     //TODO Handle errors properly
-    /*TODO:
-     * Error loading current media: [com.sun.media.jfxmediaimpl.platform.gstreamer.GSTMediaPlayer@4759d1aa] ERROR_MEDIA_INVALID: ERROR_MEDIA_INVALID
-     * Troubleshooting info:
-     *  - Media: javafx.scene.media.Media@1d562ce4
-     *  - Stream Url: ...
-     */
 
     private ImageView play;
     private ImageView pause;

@@ -115,7 +115,7 @@ public class VideoLoader {
 
                         BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                         while ((line = errorReader.readLine()) != null) {
-                            errorOutput.append(line).append("\n");
+                            errorOutput.append(line);
                         }
 
                         reader.close();
@@ -224,4 +224,24 @@ public class VideoLoader {
         return videoRequests.size();
     }
 
+    public static void checkYtDlpUpdates() {
+        try {
+            Process process = new ProcessBuilder(ytdlpPath, "-U").start();
+
+            StringBuilder errorOutput = new StringBuilder();
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            String line;
+            while ((line = errorReader.readLine()) != null) {
+                errorOutput.append(line).append("\n");
+            }
+            errorReader.close();
+
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new IOException("Exit code: " + exitCode + "\n" + errorOutput.toString().trim());
+            }
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Error Updating yt-dlp: " + e.getMessage());
+        }
+    }
 }
