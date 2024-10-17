@@ -26,9 +26,10 @@ import java.util.Objects;
 
 public class AppController {
 
-    //TODO Card reordering is buggy
-    //TODO Handle errors properly
+    //TODO When polling specefic card the card order fucks up
+    //TODO Allow multithreaded loading
     //TODO Make dark theme
+    //TODO Handle errors properly
 
     private ImageView play;
     private ImageView pause;
@@ -100,6 +101,7 @@ public class AppController {
                 btnNext.setDisable(true);
             }
 
+            updateVideocardQueueIndexes();
             Platform.runLater(() -> queueTitledPanel.setText("Video Queue - (" + VideoLoader.getQueueSize() + ")"));
         });
 
@@ -188,7 +190,6 @@ public class AppController {
     public void playSelectedVideoCard(int queueIndex) {
         changeVideo(VideoLoader.pollVideoByIndex(queueIndex));
         videoCardControllers.remove(queueIndex);
-        updateVideocardQueueIndexes();
     }
 
     private void pollVideoCardQueue() {
@@ -428,7 +429,6 @@ public class AppController {
         for (VideoCardController videoCard : videoCardControllers) {
             videoCard.updateQueueIndex();
         }
-        System.out.println();
     }
 
     private void initializeIcons() {
@@ -443,5 +443,10 @@ public class AppController {
         autoplayEnabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/autoplay1.png"))));
 
         autoplayDisabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/autoplay0.png"))));
+    }
+
+    @FXML
+    private void printStreamQueue() {
+        VideoLoader.printStreamQueue();
     }
 }

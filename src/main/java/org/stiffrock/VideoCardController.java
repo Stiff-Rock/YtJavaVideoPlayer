@@ -6,6 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -84,13 +85,18 @@ public class VideoCardController {
     @FXML
     private void play() {
         appController.playSelectedVideoCard(queueIndex);
-        delete();
+        delete(null);
     }
 
     @FXML
-    private void delete() {
+    private void delete(MouseEvent event) {
+        //Consume the event so the click does not propagate to the onActionListener on root panel.
+        if (event != null)
+            event.consume();
+
         parent.getChildren().remove(rootPanel);
         VideoLoader.removeVideoFromQueue(queueIndex);
+        appController.updateVideocardQueueIndexes();
     }
 
     @FXML
@@ -123,7 +129,6 @@ public class VideoCardController {
     }
 
     public void updateQueueIndex() {
-        queueIndex =  parent.getChildren().indexOf(rootPanel);
-        System.out.println("Title: " + title.getText() + ": " + queueIndex);
+        queueIndex = parent.getChildren().indexOf(rootPanel);
     }
 }

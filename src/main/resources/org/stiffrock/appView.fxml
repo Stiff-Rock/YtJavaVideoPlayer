@@ -26,7 +26,7 @@
             </HBox>
         </VBox>
         <HBox alignment="CENTER" layoutX="86.0" layoutY="471.0" maxWidth="640" prefHeight="34.0" spacing="10">
-            <TextField fx:id="tfUrl" layoutX="125.0" layoutY="95.0" prefHeight="25.0" prefWidth="606" promptText="Youtube Url..." text="https://www.youtube.com/watch?v=QOt5JtabryI&amp;list=PL3NkqQUxnB3DIyQrrSskr6eH2fL3GwVcK">
+            <TextField fx:id="tfUrl" layoutX="125.0" layoutY="95.0" prefHeight="25.0" prefWidth="606" promptText="Youtube Url..." text="https://youtube.com/playlist?list=PL3NkqQUxnB3BRVY5DRuGnFC4Cy4JQt1Fx&amp;si=dK8jqOM6xWORmutE">
                 <font>
                     <Font size="9.0" />
                 </font>
@@ -80,6 +80,7 @@
                 </graphic>
             </Button>
             <Button fx:id="btnToggleFadeOut" mnemonicParsing="false" onAction="#toggleFadeOut" text="Fade out: Disabled" />
+         <Button mnemonicParsing="false" onAction="#printStreamQueue" text="Button" />
         </HBox>
     </VBox>
     <VBox id="queuePanel" fx:id="queueContainer" managed="false" visible="false">

@@ -5,8 +5,10 @@ import javafx.concurrent.Task;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.function.Consumer;
 
 public class VideoLoader {
@@ -185,8 +187,13 @@ public class VideoLoader {
     }
 
     public static SimpleEntry<String, String[]> pollStreamUrl() {
+        SimpleEntry<String, String[]> entry = streamUrlQueue.poll();
+        if (entry != null) {
+            System.out.println("Polled: " + entry.getValue()[0]);
+        } //TODO gestionar esto
         notifyQueueUpdate(false);
-        return streamUrlQueue.poll();
+        printStreamQueue();
+        return entry;
     }
 
     public static SimpleEntry<String, String[]> peekVideoFromQueue(int index) {
@@ -194,22 +201,25 @@ public class VideoLoader {
     }
 
     public static void removeVideoFromQueue(int queueIndex) {
-        streamUrlQueue.remove(queueIndex);
+        SimpleEntry<String, String[]> entry = streamUrlQueue.remove(queueIndex);
+        System.out.println("Deleted: " + entry.getValue()[0]);
+        notifyQueueUpdate(false);
+        printStreamQueue();
     }
 
     public static SimpleEntry<String, String[]> pollVideoByIndex(int queueIndex) {
-        return streamUrlQueue.remove(queueIndex);
+        SimpleEntry<String, String[]> entry = streamUrlQueue.remove(queueIndex);
+        System.out.println("Index " + queueIndex + " polled: " + entry.getValue()[0]);
+        notifyQueueUpdate(false);
+        return entry;
     }
 
     public static void changeVideoPositionInQueue(int queueIndex, int desiredIndex) {
-        streamUrlQueue.add(desiredIndex, streamUrlQueue.remove(queueIndex));
-
-        for (SimpleEntry<String, String[]> entry : streamUrlQueue) {
-            String[] value = entry.getValue();
-
-            System.out.println("Value: " + Arrays.toString(value));
-        }
-        System.out.println();
+        SimpleEntry<String, String[]> entry = streamUrlQueue.remove(queueIndex);
+        streamUrlQueue.add(desiredIndex, entry);
+        System.out.println("Changed index " + queueIndex + " to " + desiredIndex + " " + entry.getValue()[0]);
+        notifyQueueUpdate(false);
+        printStreamQueue();
     }
 
     public static boolean isQueueEmpty() {
@@ -243,5 +253,16 @@ public class VideoLoader {
         } catch (IOException | InterruptedException e) {
             System.err.println("Error Updating yt-dlp: " + e.getMessage());
         }
+    }
+
+    public static void printStreamQueue() {
+        System.out.println("--Current Queue Order--");
+        int counter = 0;
+        for (SimpleEntry<String, String[]> entry : streamUrlQueue) {
+            String title = entry.getValue()[0];
+            System.out.println(counter + " - " + title);
+            counter++;
+        }
+        System.out.println("-----------------------");
     }
 }
