@@ -4,10 +4,10 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -21,12 +21,11 @@ import javafx.util.Duration;
 import java.awt.*;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.LinkedList;
 import java.util.Objects;
 
 public class AppController {
 
-    //TODO When polling specefic card the card order fucks up
+    //TODO Stop video loading and disable button when loading
     //TODO Allow multithreaded loading
     //TODO Make dark theme
     //TODO Handle errors properly
@@ -78,7 +77,6 @@ public class AppController {
     private static double masterVolume;
     private MediaPlayer mediaPlayer;
 
-    private final LinkedList<VideoCardController> videoCardControllers = new LinkedList<>();
     private VideoCardController currentVideoCardController;
 
     private boolean isProgressBarDragged;
@@ -100,8 +98,6 @@ public class AppController {
             } else if (!newAddedToQueue && VideoLoader.isQueueEmpty()) {
                 btnNext.setDisable(true);
             }
-
-            updateVideocardQueueIndexes();
             Platform.runLater(() -> queueTitledPanel.setText("Video Queue - (" + VideoLoader.getQueueSize() + ")"));
         });
 
@@ -174,7 +170,6 @@ public class AppController {
                 HBox videoCard = loader.load();
 
                 currentVideoCardController = loader.getController();
-                videoCardControllers.add(currentVideoCardController);
 
                 currentVideoCardController.setAppController(this);
                 currentVideoCardController.setParent(queueDisplayPanel);
@@ -189,13 +184,6 @@ public class AppController {
 
     public void playSelectedVideoCard(int queueIndex) {
         changeVideo(VideoLoader.pollVideoByIndex(queueIndex));
-        videoCardControllers.remove(queueIndex);
-    }
-
-    private void pollVideoCardQueue() {
-        Platform.runLater(() -> queueDisplayPanel.getChildren().remove(0));
-        videoCardControllers.remove();
-        updateVideocardQueueIndexes();
     }
 
     @FXML
@@ -211,7 +199,7 @@ public class AppController {
     private void nextBtn() {
         if (mediaPlayer != null && !VideoLoader.isQueueEmpty()) {
             changeVideo(VideoLoader.pollStreamUrl());
-            pollVideoCardQueue();
+            Platform.runLater(() -> queueDisplayPanel.getChildren().remove(0));
         }
     }
 
@@ -425,12 +413,6 @@ public class AppController {
         thread.start();
     }
 
-    public void updateVideocardQueueIndexes() {
-        for (VideoCardController videoCard : videoCardControllers) {
-            videoCard.updateQueueIndex();
-        }
-    }
-
     private void initializeIcons() {
         play = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/play.png"))));
 
@@ -443,10 +425,5 @@ public class AppController {
         autoplayEnabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/autoplay1.png"))));
 
         autoplayDisabled = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/autoplay0.png"))));
-    }
-
-    @FXML
-    private void printStreamQueue() {
-        VideoLoader.printStreamQueue();
     }
 }

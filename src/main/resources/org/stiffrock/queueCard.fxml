@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
-
+<?import javafx.scene.text.Font?>
 <HBox id="videoCardPanel" fx:id="rootPanel" maxHeight="100" maxWidth="320" minHeight="80.0" minWidth="320"
       prefHeight="80.0" prefWidth="300.0" spacing="10" stylesheets="@css/style.css"
       xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="org.stiffrock.VideoCardController">
-    <AnchorPane onMouseClicked="#play"/> <!--Continua por aqui. Tienes que sacar el buttonArea-->
-    <StackPane id="thumbnail" layoutX="14.0" layoutY="21.0">
+    <StackPane onMouseClicked="#play" id="thumbnail" layoutX="14.0" layoutY="21.0">
         <ImageView fx:id="thumbnail" fitHeight="60" fitWidth="98"/>
         <ProgressIndicator fx:id="progressInd" maxWidth="40" StackPane.alignment="CENTER"/>
         <Label id="thumbnailVideoDuration" fx:id="duration" alignment="CENTER" prefHeight="17.0" prefWidth="98.0"
                text="00:00" textAlignment="CENTER" textFill="WHITE" visible="false"
                StackPane.alignment="BOTTOM_CENTER"/>
+        <cursor>
+            <Cursor fx:constant="HAND"/>
+        </cursor>
     </StackPane>
     <AnchorPane layoutX="120.0" layoutY="21.0">
         <Label fx:id="title" alignment="TOP_LEFT" contentDisplay="CENTER" prefHeight="39.0" prefWidth="185.0"
@@ -30,11 +32,17 @@
                     <font>
                         <Font size="8.0"/>
                     </font>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
                 </Button>
                 <Button mnemonicParsing="false" text="▼" onAction="#moveCardDown">
                     <font>
                         <Font size="8.0"/>
                     </font>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
                 </Button>
             </HBox>
             <ImageView onMouseClicked="#delete">
@@ -45,7 +53,4 @@
             </ImageView>
         </HBox>
     </AnchorPane>
-    <cursor>
-        <Cursor fx:constant="HAND"/>
-    </cursor>
 </HBox>

@@ -6,7 +6,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -33,6 +32,8 @@ public class VideoCardController {
     @FXML
     private HBox buttonArea;
 
+    private String thumbnailId;
+
     private VBox parent;
 
     private int queueIndex;
@@ -48,7 +49,8 @@ public class VideoCardController {
     public void setVideo(SimpleEntry<String, String[]> videoInfo) {
         Platform.runLater(() -> {
             title.setText(videoInfo.getValue()[0]);
-            loadThumbnail(videoInfo.getValue()[1]);
+            thumbnailId = videoInfo.getValue()[1];
+            loadThumbnail(thumbnailId);
             duration.setText(videoInfo.getValue()[2]);
 
             duration.setVisible(true);
@@ -84,19 +86,18 @@ public class VideoCardController {
 
     @FXML
     private void play() {
-        appController.playSelectedVideoCard(queueIndex);
-        delete(null);
+        if (false) {
+            parent.getChildren().remove(rootPanel);
+            appController.playSelectedVideoCard(queueIndex);
+        }
     }
 
     @FXML
-    private void delete(MouseEvent event) {
-        //Consume the event so the click does not propagate to the onActionListener on root panel.
-        if (event != null)
-            event.consume();
-
-        parent.getChildren().remove(rootPanel);
-        VideoLoader.removeVideoFromQueue(queueIndex);
-        appController.updateVideocardQueueIndexes();
+    private void delete() {
+        if (false) {
+            parent.getChildren().remove(rootPanel);
+            VideoLoader.removeVideoFromQueue(queueIndex);
+        }
     }
 
     @FXML
@@ -110,25 +111,15 @@ public class VideoCardController {
     }
 
     private void moveCard(int index) {
-        if (index >= VideoLoader.getQueueSize()) {
-            index = VideoLoader.getQueueSize() - 1;
-        } else if (index < 0) {
-            return;
-        }
 
-        VideoLoader.changeVideoPositionInQueue(queueIndex, index);
-
-        int finalIndex = index;
-        Platform.runLater(() -> {
-            parent.getChildren().remove(rootPanel);
-            parent.getChildren().add(finalIndex, rootPanel);
-            appController.updateVideocardQueueIndexes();
-        });
-
-        queueIndex = index;
     }
 
-    public void updateQueueIndex() {
-        queueIndex = parent.getChildren().indexOf(rootPanel);
+    public void updateQueueIndex(int queueIndex) {
+
+        this.queueIndex = queueIndex;
+    }
+
+    public String getThumbnail() {
+        return thumbnailId;
     }
 }

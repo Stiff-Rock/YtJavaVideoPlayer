@@ -135,7 +135,11 @@ public class VideoLoader {
 
                         String streamUrl = videoUrlBuilder.toString().trim();
 
-                        String[] videoInfo = getVideoInfo(url);
+                        String[] retrivedInfo = getVideoInfo(url);
+                        if (retrivedInfo == null)
+                            throw new IOException("Could not retrieve video info.");
+
+                        String[] videoInfo = {retrivedInfo[0], retrivedInfo[1], retrivedInfo[2], streamUrl};
                         streamUrlQueue.add(new SimpleEntry<>(streamUrl, videoInfo));
 
                         notifyQueueUpdate(true);
@@ -224,6 +228,10 @@ public class VideoLoader {
 
     public static boolean isQueueEmpty() {
         return streamUrlQueue.isEmpty();
+    }
+
+    public static LinkedList<SimpleEntry<String, String[]>> getQueue() {
+        return streamUrlQueue;
     }
 
     public static int getQueueSize() {

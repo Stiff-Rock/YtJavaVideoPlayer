@@ -80,7 +80,6 @@
                 </graphic>
             </Button>
             <Button fx:id="btnToggleFadeOut" mnemonicParsing="false" onAction="#toggleFadeOut" text="Fade out: Disabled" />
-         <Button mnemonicParsing="false" onAction="#printStreamQueue" text="Button" />
         </HBox>
     </VBox>
     <VBox id="queuePanel" fx:id="queueContainer" managed="false" visible="false">
