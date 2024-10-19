@@ -28,7 +28,6 @@ import java.util.Objects;
 
 public class AppController {
 
-    //TODO Stop video loading
     //TODO Allow multithreaded loading
     //TODO Make dark theme
     //TODO Handle errors properly
