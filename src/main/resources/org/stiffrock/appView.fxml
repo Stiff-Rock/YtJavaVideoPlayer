@@ -3,103 +3,89 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.media.MediaView?>
-<?import javafx.scene.text.Font?>
-<HBox id="mainPanel" prefHeight="600" prefWidth="900" stylesheets="@css/style.css"
-      xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="org.stiffrock.AppController">
-    <VBox id="viewPanel" alignment="CENTER" layoutX="14.0" layoutY="31.0" prefHeight="600.0" prefWidth="591.0"
-          spacing="10" HBox.hgrow="ALWAYS">
-        <StackPane id="mediaViewPanel" fx:id="mediaViewPanel" layoutX="79.0" layoutY="30.0" maxHeight="360"
-                   maxWidth="640">
-            <ProgressIndicator fx:id="progressInd" visible="false"/>
-            <MediaView fx:id="mediaView" fitHeight="360" fitWidth="640"/>
+<?import javafx.scene.media.*?>
+<?import javafx.scene.text.*?>
+
+<HBox id="mainPanel" prefHeight="600" prefWidth="900" stylesheets="@css/style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.stiffrock.AppController">
+    <VBox id="viewPanel" alignment="CENTER" layoutX="14.0" layoutY="31.0" prefHeight="600.0" prefWidth="591.0" spacing="10" HBox.hgrow="ALWAYS">
+        <StackPane id="mediaViewPanel" fx:id="mediaViewPanel" layoutX="79.0" layoutY="30.0" maxHeight="360" maxWidth="640">
+            <ProgressIndicator fx:id="progressInd" visible="false" />
+            <MediaView fx:id="mediaView" fitHeight="360" fitWidth="640" />
         </StackPane>
-        <Label fx:id="lblVideoTitle" layoutX="86.0" layoutY="433.0" maxWidth="640" prefHeight="52.0" prefWidth="640.0"
-               text="No video loaded..." underline="true" wrapText="true">
+        <Label fx:id="lblVideoTitle" layoutX="86.0" layoutY="433.0" maxWidth="640" prefHeight="52.0" prefWidth="640.0" text="No video loaded..." underline="true" wrapText="true">
             <font>
-                <Font size="21.0"/>
+                <Font size="21.0" />
             </font>
         </Label>
         <VBox alignment="CENTER" layoutX="86.0" layoutY="471.0" maxWidth="640" prefHeight="34.0" spacing="5">
-            <Slider fx:id="progressBar" disable="true" maxWidth="640" prefHeight="18.0" prefWidth="400"
-                    HBox.hgrow="ALWAYS"/>
+            <Slider fx:id="progressBar" disable="true" maxWidth="640" prefHeight="18.0" prefWidth="400" HBox.hgrow="ALWAYS" />
             <HBox alignment="CENTER" prefHeight="18.0">
-                <Label fx:id="lblVideoCurrentTime" alignment="CENTER" contentDisplay="CENTER" prefHeight="16.0"
-                       prefWidth="60.0" text="00:00"/>
-                <Label alignment="CENTER" contentDisplay="CENTER" prefWidth="10" text="/"/>
-                <Label fx:id="lblVideoDuration" alignment="CENTER" contentDisplay="CENTER" prefHeight="16.0"
-                       prefWidth="60.0" text="00:00"/>
+                <Label fx:id="lblVideoCurrentTime" alignment="CENTER" contentDisplay="CENTER" prefHeight="16.0" prefWidth="60.0" text="00:00" />
+                <Label alignment="CENTER" contentDisplay="CENTER" prefWidth="10" text="/" />
+                <Label fx:id="lblVideoDuration" alignment="CENTER" contentDisplay="CENTER" prefHeight="16.0" prefWidth="60.0" text="00:00" />
             </HBox>
         </VBox>
         <HBox alignment="CENTER" layoutX="86.0" layoutY="471.0" maxWidth="640" prefHeight="34.0" spacing="10">
-            <TextField fx:id="tfUrl" layoutX="125.0" layoutY="95.0" prefHeight="25.0" prefWidth="606"
-                       promptText="Youtube Url..."
-                       text="https://youtube.com/playlist?list=PL3NkqQUxnB3BRVY5DRuGnFC4Cy4JQt1Fx&amp;si=dK8jqOM6xWORmutE">
+            <TextField fx:id="tfUrl" layoutX="125.0" layoutY="95.0" prefHeight="25.0" prefWidth="606" promptText="Youtube Url..." text="https://youtube.com/playlist?list=PL3NkqQUxnB3BRVY5DRuGnFC4Cy4JQt1Fx&amp;si=dK8jqOM6xWORmutE">
                 <font>
-                    <Font size="9.0"/>
+                    <Font size="9.0" />
                 </font>
             </TextField>
-            <Button fx:id="btnLoad" layoutX="684.0" layoutY="95.0" mnemonicParsing="false" onAction="#loadBtn"
-                    prefHeight="24.0" prefWidth="34.0">
+            <Button fx:id="btnLoad" layoutX="684.0" layoutY="95.0" mnemonicParsing="false" onAction="#loadBtn" prefHeight="24.0" prefWidth="34.0">
                 <graphic>
                     <ImageView>
-                        <Image url="@media/download.png"/>
+                        <Image url="@media/download.png" />
                     </ImageView>
                 </graphic>
             </Button>
         </HBox>
-        <HBox id="buttonsPanel" alignment="CENTER" layoutX="302.0" layoutY="508.0" maxWidth="640" prefHeight="24.0"
-              prefWidth="580.0" spacing="10">
+        <HBox id="buttonsPanel" alignment="CENTER" layoutX="302.0" layoutY="508.0" maxWidth="640" prefHeight="24.0" prefWidth="580.0" spacing="10">
             <Button fx:id="btnPlayPause" disable="true" mnemonicParsing="false" onAction="#changeVideoState">
                 <graphic>
                     <ImageView disable="true">
-                        <Image url="@media/play.png"/>
+                        <Image url="@media/play.png" />
                     </ImageView>
                 </graphic>
             </Button>
             <Button fx:id="btnNext" disable="true" mnemonicParsing="false" onAction="#nextBtn">
                 <graphic>
                     <ImageView>
-                        <Image url="@media/next.png"/>
+                        <Image url="@media/next.png" />
                     </ImageView>
                 </graphic>
             </Button>
             <Button fx:id="btnLoop" disable="true" mnemonicParsing="false" onAction="#loopBtn">
                 <graphic>
                     <ImageView>
-                        <Image url="@media/loop0.png"/>
+                        <Image url="@media/loop0.png" />
                     </ImageView>
                 </graphic>
             </Button>
             <Button fx:id="btnAutoplay" disable="true" mnemonicParsing="false" onAction="#autoplayBtn">
                 <graphic>
                     <ImageView>
-                        <Image url="@media/autoplay0.png"/>
+                        <Image url="@media/autoplay0.png" />
                     </ImageView>
                 </graphic>
             </Button>
             <ImageView>
-                <Image url="@media/speaker.png"/>
+                <Image url="@media/speaker.png" />
             </ImageView>
-            <Slider fx:id="volumeSlider" blockIncrement="0.01" max="1.0" prefHeight="14.0" prefWidth="89.0"
-                    value="0.5"/>
+            <Slider fx:id="volumeSlider" blockIncrement="0.01" max="1.0" prefHeight="14.0" prefWidth="89.0" value="0.5" />
             <Button fx:id="btnToggleQueue" mnemonicParsing="false" onAction="#toggleQueueBtn" text="Show Queue">
                 <graphic>
                     <ImageView>
-                        <Image url="@media/queue1.png"/>
+                        <Image url="@media/queue1.png" />
                     </ImageView>
                 </graphic>
             </Button>
-            <Button fx:id="btnToggleFadeOut" mnemonicParsing="false" onAction="#toggleFadeOut"
-                    text="Fade out: Disabled"/>
+            <Button fx:id="btnToggleFadeOut" mnemonicParsing="false" onAction="#toggleFadeOut" text="Fade out: Disabled" />
         </HBox>
     </VBox>
     <VBox id="queuePanel" fx:id="queueContainer" managed="false" visible="false">
-        <TitledPane fx:id="queueTitledPanel" animated="false" collapsible="false" prefWidth="380.0"
-                    text="Video Queue - (0)">
+        <TitledPane fx:id="queueTitledPanel" animated="false" collapsible="false" prefWidth="380.0" text="Video Queue - (0)">
             <ScrollPane hbarPolicy="NEVER" vbarPolicy="ALWAYS">
-                <VBox id="queueListPanel" fx:id="queueDisplayPanel" alignment="TOP_CENTER" prefHeight="815.0"/>
+                <VBox id="queueListPanel" fx:id="queueDisplayPanel" alignment="TOP_CENTER" prefHeight="815.0" />
             </ScrollPane>
         </TitledPane>
     </VBox>

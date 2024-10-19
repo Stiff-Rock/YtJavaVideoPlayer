@@ -32,7 +32,10 @@ public class AppController {
     //TODO Allow multithreaded loading
     //TODO Make dark theme
     //TODO Handle errors properly
+    //TODO Handle media errors (repeat or maybe give out the mediaPlayer directly)
 
+    private ImageView load;
+    private ImageView cross;
     private ImageView play;
     private ImageView pause;
     private ImageView loopEnabled;
@@ -99,6 +102,8 @@ public class AppController {
     private boolean isQueueVisible;
     private boolean isFadeOutActive;
 
+    private static Task<Void> currentLoadingTask;
+
     /**
      * JavaFX required initialize() function for the controller.
      * Configures listeners and loads UI icons for dynamic updates.
@@ -133,14 +138,27 @@ public class AppController {
     }
 
     /**
-     * Triggered when the user presses the "load" button after entering a URL.
+     * Handles the action when the user presses the "Load" button.
+     * If a loading task is currently active, this method acts as a cancel button,
+     */
+    @FXML
+    private void loadBtn() {
+        if (currentLoadingTask != null && currentLoadingTask.isRunning()) {
+            currentLoadingTask.cancel();
+            queueDisplayPanel.getChildren().remove(queueDisplayPanel.getChildren().size() - 1);
+            Platform.runLater(() -> btnLoad.setGraphic(load));
+        } else {
+            loadRequest();
+            Platform.runLater(() -> btnLoad.setGraphic(cross));
+        }
+    }
+
+    /**
      * It retrieves the URL from the input field, checks if it is a valid URL, and determines whether it
      * corresponds to a playlist or a single video depending of wether the string contains "list=" or not.
      * Depending on the case, it calls the appropriate method.
      */
-    @FXML
-    private void loadBtn() {
-        btnLoad.setDisable(true);
+    private void loadRequest() {
         String videoUrl = tfUrl.getText();
 
         if (videoUrl == null) {
@@ -182,9 +200,9 @@ public class AppController {
      * It recursively loads more videos if the requests queue isn't empty.
      */
     private void loadNextStream() {
-        Task<Void> streamLoadingTask = VideoLoader.retrieveStreamUrl();
+        currentLoadingTask = VideoLoader.retrieveStreamUrl();
 
-        streamLoadingTask.setOnSucceeded(streamEvent -> {
+        currentLoadingTask.setOnSucceeded(streamEvent -> {
             if (mediaPlayer == null) {
                 displayVideo(VideoLoader.pollStreamUrl());
             }
@@ -201,7 +219,7 @@ public class AppController {
             }
         });
 
-        new Thread(streamLoadingTask).start();
+        new Thread(currentLoadingTask).start();
     }
 
     /**
@@ -221,7 +239,6 @@ public class AppController {
                 activeVideoCards.put(videoCard, currentVideoCardController);
 
                 queueDisplayPanel.getChildren().add(videoCard);
-
             } catch (IOException e) {
                 System.err.println("Error loading video card: " + e.getMessage());
             }
@@ -542,6 +559,10 @@ public class AppController {
      * These images allow for dynamic changes to the user interface.
      */
     private void initializeIcons() {
+        load = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/download.png"))));
+
+        cross = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/cross.png"))));
+
         play = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/play.png"))));
 
         pause = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("media/pause.png"))));
@@ -573,5 +594,4 @@ public class AppController {
             }
         }
     }
-
 }

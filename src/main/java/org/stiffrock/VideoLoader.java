@@ -146,7 +146,11 @@ public class VideoLoader {
 
                         System.out.println("Current queue length: " + streamUrlQueue.size());
                     } catch (IOException | InterruptedException e) {
-                        System.err.println(e.getMessage());
+                        if (isCancelled()) {
+                            System.out.println("Loading cancelled");
+                            break;
+                        }
+                        System.err.println("Error retrieving the stream URL: " + e.getMessage());
                     }
                 } while (!correctStreamUrl);
 
