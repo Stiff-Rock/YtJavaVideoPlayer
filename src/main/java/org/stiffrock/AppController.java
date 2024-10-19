@@ -29,7 +29,6 @@ import java.util.Objects;
 public class AppController {
 
     //TODO Stop video loading
-    //TODO Load media directly
     //TODO Allow multithreaded loading
     //TODO Make dark theme
     //TODO Handle errors properly
@@ -268,7 +267,7 @@ public class AppController {
      *
      * @param videoEntry The video entry containing the video information.
      */
-    private void changeVideo(SimpleEntry<String, String[]> videoEntry) {
+    private void changeVideo(SimpleEntry<Media, String[]> videoEntry) {
         mediaPlayer.stop();
         progressBar.setValue(0);
         toggleBtnPlayPause(play);
@@ -329,12 +328,12 @@ public class AppController {
      *
      * @param video The video entry containing the video URL and title.
      */
-    private void displayVideo(SimpleEntry<String, String[]> video) {
+    private void displayVideo(SimpleEntry<Media, String[]> video) {
         lblVideoTitle.setText(video.getValue()[0]);
 
         progressInd.setVisible(true);
 
-        Media media = new Media(video.getKey());
+        Media media = video.getKey();
         mediaPlayer = new MediaPlayer(media);
 
         mediaPlayer.setOnReady(() -> {
@@ -560,14 +559,14 @@ public class AppController {
      * Updates all the videoCardControllers in the activeVideoCards Map
      */
     public void updateVideoCardQueueIndexes() {
-        LinkedList<SimpleEntry<String, String[]>> queue = VideoLoader.getQueue();
+        LinkedList<SimpleEntry<Media, String[]>> queue = VideoLoader.getQueue();
 
         for (Map.Entry<HBox, VideoCardController> cardEntry : activeVideoCards.entrySet()) {
             String cardVideoId = cardEntry.getValue().getVideoId();
 
             for (int i = 0; i < queue.size(); i++) {
-                SimpleEntry<String, String[]> queueEntry = queue.get(i);
-                if (queueEntry.getKey().equals(cardVideoId)) {
+                SimpleEntry<Media, String[]> queueEntry = queue.get(i);
+                if (queueEntry.getValue()[3].equals(cardVideoId)) {
                     cardEntry.getValue().updateQueueIndex(i);
                     break;
                 }

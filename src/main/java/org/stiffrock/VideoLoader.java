@@ -1,6 +1,7 @@
 package org.stiffrock;
 
 import javafx.concurrent.Task;
+import javafx.scene.media.Media;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,7 +15,7 @@ import java.util.function.Consumer;
 public class VideoLoader {
     public static String ytdlpPath;
     private static final Queue<String> videoRequests = new LinkedList<>();
-    private static final LinkedList<SimpleEntry<String, String[]>> streamUrlQueue = new LinkedList<>();
+    private static final LinkedList<SimpleEntry<Media, String[]>> streamUrlQueue = new LinkedList<>();
     private static Consumer<Boolean> onQueueUpdate;
 
     public static void setOnQueueUpdateListener(Consumer<Boolean> listener) {
@@ -134,12 +135,13 @@ public class VideoLoader {
                         }
 
                         String streamUrl = videoUrlBuilder.toString().trim();
+                        Media video = new Media(streamUrl);
                         String[] retrivedInfo = getVideoInfo(url);
                         if (retrivedInfo == null)
                             throw new IOException("Could not retrieve video info.");
                         String[] videoInfo = {retrivedInfo[0], retrivedInfo[1], retrivedInfo[2], streamUrl};
 
-                        streamUrlQueue.add(new SimpleEntry<>(streamUrl, videoInfo));
+                        streamUrlQueue.add(new SimpleEntry<>(video, videoInfo));
                         notifyQueueUpdate(true);
 
                         System.out.println("Current queue length: " + streamUrlQueue.size());
@@ -188,8 +190,8 @@ public class VideoLoader {
         return null;
     }
 
-    public static SimpleEntry<String, String[]> pollStreamUrl() {
-        SimpleEntry<String, String[]> entry = streamUrlQueue.poll();
+    public static SimpleEntry<Media, String[]> pollStreamUrl() {
+        SimpleEntry<Media, String[]> entry = streamUrlQueue.poll();
         if (entry != null) {
             System.out.println("Polled: " + entry.getValue()[0]);
         } //TODO gestionar esto
@@ -198,26 +200,26 @@ public class VideoLoader {
         return entry;
     }
 
-    public static SimpleEntry<String, String[]> peekVideoFromQueue(int index) {
+    public static SimpleEntry<Media, String[]> peekVideoFromQueue(int index) {
         return streamUrlQueue.get(index);
     }
 
     public static void removeVideoFromQueue(int queueIndex) {
-        SimpleEntry<String, String[]> entry = streamUrlQueue.remove(queueIndex);
+        SimpleEntry<Media, String[]> entry = streamUrlQueue.remove(queueIndex);
         System.out.println("Deleted: " + entry.getValue()[0]);
         notifyQueueUpdate(false);
         printStreamQueue();
     }
 
-    public static SimpleEntry<String, String[]> pollVideoByIndex(int queueIndex) {
-        SimpleEntry<String, String[]> entry = streamUrlQueue.remove(queueIndex);
+    public static SimpleEntry<Media, String[]> pollVideoByIndex(int queueIndex) {
+        SimpleEntry<Media, String[]> entry = streamUrlQueue.remove(queueIndex);
         System.out.println("Index " + queueIndex + " polled: " + entry.getValue()[0]);
         notifyQueueUpdate(false);
         return entry;
     }
 
     public static void changeVideoPositionInQueue(int queueIndex, int desiredIndex) {
-        SimpleEntry<String, String[]> entry = streamUrlQueue.remove(queueIndex);
+        SimpleEntry<Media, String[]> entry = streamUrlQueue.remove(queueIndex);
         streamUrlQueue.add(desiredIndex, entry);
         System.out.println("Changed index " + queueIndex + " to " + desiredIndex + " " + entry.getValue()[0]);
         notifyQueueUpdate(false);
@@ -228,7 +230,7 @@ public class VideoLoader {
         return streamUrlQueue.isEmpty();
     }
 
-    public static LinkedList<SimpleEntry<String, String[]>> getQueue() {
+    public static LinkedList<SimpleEntry<Media, String[]>> getQueue() {
         return streamUrlQueue;
     }
 
@@ -264,7 +266,7 @@ public class VideoLoader {
     public static void printStreamQueue() {
         System.out.println("--Current Queue Order--");
         int counter = 0;
-        for (SimpleEntry<String, String[]> entry : streamUrlQueue) {
+        for (SimpleEntry<Media, String[]> entry : streamUrlQueue) {
             String title = entry.getValue()[0];
             System.out.println(counter + " - " + title);
             counter++;
