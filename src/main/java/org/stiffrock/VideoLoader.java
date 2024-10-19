@@ -134,14 +134,12 @@ public class VideoLoader {
                         }
 
                         String streamUrl = videoUrlBuilder.toString().trim();
-
                         String[] retrivedInfo = getVideoInfo(url);
                         if (retrivedInfo == null)
                             throw new IOException("Could not retrieve video info.");
-
                         String[] videoInfo = {retrivedInfo[0], retrivedInfo[1], retrivedInfo[2], streamUrl};
-                        streamUrlQueue.add(new SimpleEntry<>(streamUrl, videoInfo));
 
+                        streamUrlQueue.add(new SimpleEntry<>(streamUrl, videoInfo));
                         notifyQueueUpdate(true);
 
                         System.out.println("Current queue length: " + streamUrlQueue.size());

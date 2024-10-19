@@ -32,7 +32,7 @@ public class VideoCardController {
     @FXML
     private HBox buttonArea;
 
-    private String thumbnailId;
+    private String videoId;
 
     private VBox parent;
 
@@ -49,9 +49,9 @@ public class VideoCardController {
     public void setVideo(SimpleEntry<String, String[]> videoInfo) {
         Platform.runLater(() -> {
             title.setText(videoInfo.getValue()[0]);
-            thumbnailId = videoInfo.getValue()[1];
-            loadThumbnail(thumbnailId);
+            loadThumbnail(videoInfo.getValue()[1]);
             duration.setText(videoInfo.getValue()[2]);
+            videoId = videoInfo.getValue()[3];
 
             duration.setVisible(true);
             progressInd.setVisible(false);
@@ -86,18 +86,16 @@ public class VideoCardController {
 
     @FXML
     private void play() {
-        if (false) {
+        /*
             parent.getChildren().remove(rootPanel);
             appController.playSelectedVideoCard(queueIndex);
-        }
+         */
     }
 
     @FXML
     private void delete() {
-        if (false) {
-            parent.getChildren().remove(rootPanel);
-            VideoLoader.removeVideoFromQueue(queueIndex);
-        }
+        parent.getChildren().remove(rootPanel);
+        VideoLoader.removeVideoFromQueue(queueIndex);
     }
 
     @FXML
@@ -111,15 +109,24 @@ public class VideoCardController {
     }
 
     private void moveCard(int index) {
+        if (index >= VideoLoader.getQueueSize()) {
+            index = VideoLoader.getQueueSize() - 1;
+        } else if (index < 0) {
+            return;
+        }
 
+        VideoLoader.changeVideoPositionInQueue(queueIndex, index);
+        Platform.runLater(() -> {
+            parent.getChildren().remove(rootPanel);
+            parent.getChildren().add(queueIndex, rootPanel);
+        });
     }
 
     public void updateQueueIndex(int queueIndex) {
-
         this.queueIndex = queueIndex;
     }
 
-    public String getThumbnail() {
-        return thumbnailId;
+    public String getVideoId() {
+        return videoId;
     }
 }
