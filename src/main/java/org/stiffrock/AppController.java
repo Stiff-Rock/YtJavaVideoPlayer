@@ -569,7 +569,6 @@ public class AppController {
                 SimpleEntry<String, String[]> queueEntry = queue.get(i);
                 if (queueEntry.getKey().equals(cardVideoId)) {
                     cardEntry.getValue().updateQueueIndex(i);
-                    System.out.println(i + " - " + queueEntry.getValue()[0]);
                     break;
                 }
             }

@@ -86,10 +86,8 @@ public class VideoCardController {
 
     @FXML
     private void play() {
-        /*
-            parent.getChildren().remove(rootPanel);
-            appController.playSelectedVideoCard(queueIndex);
-         */
+        parent.getChildren().remove(rootPanel);
+        appController.playSelectedVideoCard(queueIndex);
     }
 
     @FXML
