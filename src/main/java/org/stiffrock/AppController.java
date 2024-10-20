@@ -28,11 +28,6 @@ import java.util.Objects;
 
 public class AppController {
 
-    //TODO Allow multithreaded loading
-    //TODO Make dark theme
-    //TODO Handle errors properly
-    //TODO Handle media errors (repeat or maybe give out the mediaPlayer directly)
-
     private ImageView load;
     private ImageView cross;
     private ImageView play;
@@ -210,7 +205,7 @@ public class AppController {
                 addVideoCardToQueue();
                 loadNextStream();
             } else {
-                btnLoad.setDisable(false);
+                Platform.runLater(() -> btnLoad.setGraphic(load));
                 Toolkit.getDefaultToolkit().beep();
                 System.out.println("--------------------");
                 System.out.println("Finished loading video/s");
@@ -382,9 +377,19 @@ public class AppController {
         MediaPlayer finalMediaPlayer = mediaPlayer;
         mediaPlayer.setOnError(() -> {
             System.err.println("Error loading current media: " + finalMediaPlayer.getError().getMessage());
+            System.out.println(mediaPlayer.errorProperty());
             System.err.println("Troubleshooting info: ");
             System.err.println(" - Media: " + media);
-            System.err.println(" - Stream Url: " + video.getKey());
+            System.err.println(" - Stream Url: " + media.getSource());
+
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Media Error");
+                alert.setHeaderText("Error loading media");
+                alert.setContentText("Please retry loading that video");
+                alert.showAndWait();
+                progressInd.setVisible(false);
+            });
         });
     }
 
